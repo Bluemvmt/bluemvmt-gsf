@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, field_serializer
+from pydantic_core import from_json
 
 from .gsf_sensor_specific import GsfEM3Specific, GsfEM4Specific
 
@@ -130,3 +131,7 @@ class GsfRecord(GsfRecordBase):
     # nav_error: GsfNavigationError
     # hv_nav_error: GsfHVNavigationError
     attitude: GsfAttitude | None = None
+
+
+def deserialize_record(json_src: str) -> GsfRecord:
+    return GsfRecord.model_validate(from_json(json_src))
