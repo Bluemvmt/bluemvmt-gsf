@@ -18,6 +18,13 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 
 @pytest.fixture(scope="session")
+def swath_bathymetric_ping_json():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(f"{dir_path}/swath_bathymetric_ping.json") as f:
+        yield f.read()
+
+
+@pytest.fixture(scope="session")
 def gsf_file_name():
     return "16mbs17076_211324_p_100.gsf"
 
