@@ -61,18 +61,14 @@ class GsfComment(BaseModel):
 class GsfSwathBathySummary(BaseModel):
     start_time: datetime
     end_time: datetime
-    min_latitude: float
-    min_longitude: float
-    max_latitude: float
-    max_longitude: float
+    min_location: Geo
+    max_location: Geo
     min_depth: float
     max_depth: float
 
 
 class GsfSwathBathyPing(BaseModel):
     ping_time: datetime
-    latitude: float
-    longitude: float
     height: float
     sep: float
     number_beams: int
