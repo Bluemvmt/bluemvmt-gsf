@@ -98,7 +98,7 @@ class GsfSwathBathyPing(BaseModel):
     depth_error: list[float] | None = None
     across_track_error: list[float] | None = None
     along_track_error: list[float] | None = None
-    #    quality_flags: str
+    quality_flags: str | None = None
     #   beam_flags: str
     signal_to_noise: float | None = None
     beam_angle_forward: list[float] | None = None
@@ -131,6 +131,10 @@ class GsfRecord(GsfRecordBase):
     # nav_error: GsfNavigationError
     # hv_nav_error: GsfHVNavigationError
     attitude: GsfAttitude | None = None
+
+
+class GsfAllRecords(BaseModel):
+    records: list[GsfRecord] = []
 
 
 def deserialize_record(json_src: str) -> GsfRecord:
