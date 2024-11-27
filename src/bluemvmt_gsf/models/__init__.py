@@ -68,12 +68,11 @@ class GsfSwathBathySummary(BaseModel):
 
 
 class GsfSwathBathyPing(BaseModel):
-    ping_time: datetime
     height: float
     sep: float
     number_beams: int
     center_beam: int
-    ping_flags_bits: str
+    #    ping_flags_bits: str
     reserved: int
     tide_corrector: float
     gps_tide_corrector: float
@@ -84,37 +83,37 @@ class GsfSwathBathyPing(BaseModel):
     heave: float
     course: float
     speed: float
-    depth: float
-    nominal_depth: list[float] | None
-    across_track: list[float] | None
-    along_track: list[float] | None
-    travel_time: list[float] | None
-    beam_angle: list[float] | None
-    mc_amplitude: list[float] | None
-    mr_amplitude: list[float] | None
-    echo_width: list[float] | None
-    quality_factor: list[float] | None
-    receive_heave: list[float] | None
-    depth_error: list[float] | None
-    across_track_error: list[float] | None
-    along_track_error: list[float] | None
-    quality_flags: str
-    beam_flags: str
-    signal_to_noise: float | None
-    beam_angle_forward: list[float] | None
-    vertical_error: list[float] | None
-    horizontal_error: list[float] | None
-    sector_number: list[int] | None
-    detection_info: list[int] | None
-    incident_beam_adj: list[float] | None
-    system_cleaning: list[int] | None
-    doppler_corr: list[float] | None
-    sonar_vert_uncert: list[float] | None
-    sonar_horiz_uncert: list[float] | None
-    detection_window: list[float] | None
-    mean_abs_coeff: list[float] | None
+    depth: list[float] | None = None
+    nominal_depth: list[float] | None = None
+    across_track: list[float] | None = None
+    along_track: list[float] | None = None
+    travel_time: list[float] | None = None
+    beam_angle: list[float] | None = None
+    mc_amplitude: list[float] | None = None
+    mr_amplitude: list[float] | None = None
+    echo_width: list[float] | None = None
+    quality_factor: list[float] | None = None
+    receive_heave: list[float] | None = None
+    depth_error: list[float] | None = None
+    across_track_error: list[float] | None = None
+    along_track_error: list[float] | None = None
+    #    quality_flags: str
+    #   beam_flags: str
+    signal_to_noise: float | None = None
+    beam_angle_forward: list[float] | None = None
+    vertical_error: list[float] | None = None
+    horizontal_error: list[float] | None = None
+    sector_number: list[int] | None = None
+    detection_info: list[int] | None = None
+    incident_beam_adj: list[float] | None = None
+    system_cleaning: list[int] | None = None
+    doppler_corr: list[float] | None = None
+    sonar_vert_uncert: list[float] | None = None
+    sonar_horiz_uncert: list[float] | None = None
+    detection_window: list[float] | None = None
+    mean_abs_coeff: list[float] | None = None
     sensor_id: int
-    sensor_data: GsfEM3Specific | GsfEM4Specific | None
+    sensor_data: GsfEM3Specific | GsfEM4Specific | None = None
 
 
 class GsfRecord(GsfRecordBase):

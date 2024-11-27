@@ -2,6 +2,7 @@ import ctypes
 import logging
 
 from gsfpy3_09 import GsfFile
+from gsfpy3_09.gsfSwathBathyPing import c_gsfSwathBathyPing
 
 from ..models import (
     Geo,
@@ -9,6 +10,7 @@ from ..models import (
     GsfComment,
     GsfHistory,
     GsfRecord,
+    GsfSwathBathyPing,
     GsfSwathBathySummary,
     RecordType,
 )
@@ -120,6 +122,26 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
         )
         yield pydantic_record
 
+    num_records = gsf_file.get_number_records(
+        desired_record=RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING.value
+    )
+    _log.debug(f"Reading {num_records} GSF_RECORD_SWATH_BATHYMETRY_PING records")
+    for index in range(1, num_records + 1):
+        data_id, record = gsf_file.read(
+            RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING.value, index
+        )
+        gsf_ping = _convert_swath_bathy_ping(record.mb_ping)
+        pydantic_record = GsfRecord(
+            source_file_name=file_name,
+            record_id=data_id.recordID,
+            record_number=data_id.record_number,
+            version="03_09",
+            record_type=RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING,
+            time=timespec_to_datetime(record.mb_ping.ping_time),
+            mb_ping=gsf_ping,
+        )
+        yield pydantic_record
+
 
 def _convert_swath_bathy_summary(summary) -> GsfSwathBathySummary:
     return GsfSwathBathySummary(
@@ -133,4 +155,26 @@ def _convert_swath_bathy_summary(summary) -> GsfSwathBathySummary:
         ),
         min_depth=summary.min_depth,
         max_depth=summary.max_depth,
+    )
+
+
+def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> GsfSwathBathyPing:
+    return GsfSwathBathyPing(
+        height=ping.height,
+        sep=ping.sep,
+        number_beams=ping.number_beams,
+        center_beam=ping.center_beam,
+        ping_flags_bits=ping.ping_flags,
+        reserved=ping.reserved,
+        tide_corrector=ping.tide_corrector,
+        gps_tide_corrector=ping.gps_tide_corrector,
+        depth_corrector=ping.depth_corrector,
+        heading=ping.heading,
+        pitch=ping.pitch,
+        roll=ping.roll,
+        heave=ping.heave,
+        course=ping.course,
+        speed=ping.speed,
+        sensor_id=ping.sensor_id,
+        quality_flags=ping.quality_flags,
     )
