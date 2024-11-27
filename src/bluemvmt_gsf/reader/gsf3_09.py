@@ -19,9 +19,16 @@ from . import timespec_to_datetime
 _log = logging.getLogger("bluemvmt_gsf.reader")
 
 
-def char_pointer_to_str(original):
+def _char_pointer_to_str(original):
     c_string = ctypes.cast(original, ctypes.c_char_p)
     return c_string.value.decode("utf-8")
+
+
+def _double_pointer_to_array(original, num_values) -> list[float]:
+    l: list[float] = []
+    for i in range(0, num_values):
+        l.append(original[i])
+    return l
 
 
 def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
@@ -89,7 +96,7 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
         comment_length = record.comment.comment_length
         gsf_comment = GsfComment(
             comment_length=comment_length,
-            comment=char_pointer_to_str(record.comment.comment),
+            comment=_char_pointer_to_str(record.comment.comment),
         )
         pydantic_record = GsfRecord(
             source_file_name=file_name,
@@ -177,4 +184,6 @@ def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> GsfSwathBathyPing:
         speed=ping.speed,
         sensor_id=ping.sensor_id,
         quality_flags=ping.quality_flags,
+        depth=_double_pointer_to_array(ping.depth, ping.number_beams),
+        nominal_depth=_double_pointer_to_array(ping.nominal_depth, ping.number_beams),
     )
