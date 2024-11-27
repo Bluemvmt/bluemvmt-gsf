@@ -2,7 +2,7 @@ import logging
 
 from gsfpy3_09 import GsfFile
 
-from ..models import GsfAttitude, GsfRecord, RecordType
+from ..models import GsfAttitude, GsfHistory, GsfRecord, RecordType
 from . import timespec_to_datetime
 
 _log = logging.getLogger("bluemvmt_gsf.reader")
@@ -38,5 +38,28 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
             record_type=RecordType.GSF_RECORD_ATTITUDE,
             time=timespec_to_datetime(record.attitude.attitude_time.contents),
             attitude=gsf_attitude,
+        )
+        yield pydantic_record
+
+    num_records = gsf_file.get_number_records(
+        desired_record=RecordType.GSF_RECORD_HISTORY.value
+    )
+    _log.debug(f"Reading {num_records} GSF_RECORD_HISTORY records")
+    for index in range(1, num_records):
+        data_id, record = gsf_file.read(RecordType.GSF_RECORD_HISTORY.value, index)
+        gsf_history = GsfHistory(
+            host_name=record.history.host_name.decode("utf-8"),
+            operator_name=record.history.operator_name.decode("utf-8"),
+            command_line=record.history.command_line.contents.value.decode("utf-8"),
+            comment=record.history.comment.contents.value.decode("utf-8"),
+        )
+        pydantic_record = GsfRecord(
+            source_file_name=file_name,
+            record_id=data_id.recordID,
+            record_number=data_id.record_number,
+            version="03_09",
+            record_type=RecordType.GSF_RECORD_HISTORY,
+            time=timespec_to_datetime(record.history.history_time),
+            history=gsf_history,
         )
         yield pydantic_record
