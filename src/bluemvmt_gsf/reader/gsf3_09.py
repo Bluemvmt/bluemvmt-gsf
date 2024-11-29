@@ -2,12 +2,14 @@ import ctypes
 import logging
 
 from gsfpy3_09 import GsfFile
+from gsfpy3_09.gsfSensorSpecific import c_gsfEM3Specific
 from gsfpy3_09.gsfSwathBathyPing import c_gsfSwathBathyPing
 
 from ..models import (
     Geo,
     GsfAttitude,
     GsfComment,
+    GsfEM3Specific,
     GsfHistory,
     GsfRecord,
     GsfSwathBathyPing,
@@ -31,14 +33,11 @@ def _ubyte_pointer_to_str(original) -> str | None:
         return None
 
 
-def _double_pointer_to_array(
-    original, num_values, field_name: str
-) -> list[float] | None:
+def _double_pointer_to_array(original, num_values) -> list[float] | None:
     try:
         float_list: list[float] = original[0:num_values]
         return float_list
-    except SystemError as e:
-        _log.error(f"SystemError {e} for {field_name}")
+    except SystemError:
         return None
 
 
@@ -176,8 +175,14 @@ def _convert_swath_bathy_summary(summary) -> GsfSwathBathySummary:
     )
 
 
+def _convert_em3_specific(sensor: c_gsfEM3Specific) -> GsfEM3Specific | None:
+    _log.debug(f"sensor = {sensor}")
+    return None
+
+
 def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> GsfSwathBathyPing:
     number_beams: int = ping.number_beams
+    #    _log.debug(f"sensor_data = {ping.sensor_data.gsfEM3Specific.model_number}")
     return GsfSwathBathyPing(
         height=ping.height,
         sep=ping.sep,
@@ -196,44 +201,22 @@ def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> GsfSwathBathyPing:
         speed=ping.speed,
         sensor_id=ping.sensor_id,
         quality_flags=_ubyte_pointer_to_str(ping.quality_flags),
-        depth=_double_pointer_to_array(ping.depth, number_beams, "depth"),
-        nominal_depth=_double_pointer_to_array(
-            ping.nominal_depth, number_beams, "nominal_depth"
-        ),
-        across_track=_double_pointer_to_array(
-            ping.across_track, number_beams, "across_track"
-        ),
-        along_track=_double_pointer_to_array(
-            ping.along_track, number_beams, "along_track"
-        ),
-        travel_time=_double_pointer_to_array(
-            ping.travel_time, number_beams, "travel_time"
-        ),
-        beam_angle=_double_pointer_to_array(
-            ping.beam_angle, number_beams, "beam_angle"
-        ),
-        mc_amplitude=_double_pointer_to_array(
-            ping.mc_amplitude, number_beams, "mc_amplitude"
-        ),
-        mr_amplitude=_double_pointer_to_array(
-            ping.mr_amplitude, number_beams, "mr_amplitude"
-        ),
-        echo_width=_double_pointer_to_array(
-            ping.echo_width, number_beams, "echo_width"
-        ),
-        quality_factor=_double_pointer_to_array(
-            ping.quality_factor, ping.number_beams, "quality_factor"
-        ),
-        receive_heave=_double_pointer_to_array(
-            ping.receive_heave, ping.number_beams, "receive_heave"
-        ),
-        depth_error=_double_pointer_to_array(
-            ping.depth_error, ping.number_beams, "depth_error"
-        ),
+        depth=_double_pointer_to_array(ping.depth, number_beams),
+        nominal_depth=_double_pointer_to_array(ping.nominal_depth, number_beams),
+        across_track=_double_pointer_to_array(ping.across_track, number_beams),
+        along_track=_double_pointer_to_array(ping.along_track, number_beams),
+        travel_time=_double_pointer_to_array(ping.travel_time, number_beams),
+        beam_angle=_double_pointer_to_array(ping.beam_angle, number_beams),
+        mc_amplitude=_double_pointer_to_array(ping.mc_amplitude, number_beams),
+        mr_amplitude=_double_pointer_to_array(ping.mr_amplitude, number_beams),
+        echo_width=_double_pointer_to_array(ping.echo_width, number_beams),
+        quality_factor=_double_pointer_to_array(ping.quality_factor, ping.number_beams),
+        receive_heave=_double_pointer_to_array(ping.receive_heave, ping.number_beams),
+        depth_error=_double_pointer_to_array(ping.depth_error, ping.number_beams),
         across_track_error=_double_pointer_to_array(
-            ping.across_track_error, ping.number_beams, "across_track-error"
+            ping.across_track_error, ping.number_beams
         ),
         along_track_error=_double_pointer_to_array(
-            ping.along_track_error, ping.number_beams, "along_track_error"
+            ping.along_track_error, ping.number_beams
         ),
     )
