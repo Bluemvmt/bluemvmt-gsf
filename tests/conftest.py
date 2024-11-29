@@ -17,6 +17,16 @@ logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
 
+def pytest_addoption(parser):
+    parser.addoption("--save-json", action="store", default="false")
+    parser.addoption("--test-gsf-file", action="store", default="GSF3_09_test_file.gsf")
+
+
+@pytest.fixture(scope="session")
+def save_json(request) -> bool:
+    return request.config.getoption("--save-json").lower() == "true"
+
+
 @pytest.fixture(scope="session")
 def swath_bathymetric_ping_json():
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -25,8 +35,8 @@ def swath_bathymetric_ping_json():
 
 
 @pytest.fixture(scope="session")
-def gsf_file_name():
-    return "16mbs17076_211324_p_100.gsf"
+def gsf_file_name(request):
+    return request.config.getoption("--test-gsf-file")
 
 
 @pytest.fixture(scope="session")
