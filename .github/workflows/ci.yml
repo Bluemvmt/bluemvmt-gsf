@@ -101,7 +101,7 @@ jobs:
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
     needs:
-    - prepare
+    - finalize
     runs-on: ubuntu-latest
 
     environment:
