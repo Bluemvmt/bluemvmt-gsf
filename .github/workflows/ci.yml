@@ -102,7 +102,7 @@ jobs:
     name: Publish Python 🐍 distribution 📦 to PyPI
     needs:
     - finalize
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-test'}}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && ! endsWith(github.ref, '-test'}}
     runs-on: ubuntu-latest
 
     environment:
