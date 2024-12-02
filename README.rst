@@ -1,9 +1,11 @@
 .. These are examples of badges you might want to add to your README:
    please update the URLs accordingly
 
+    .. image:: https://coveralls.io/repos/github/vincebluemvmt/bluemvmt-gsf/badge.svg?branch=refs/tags/0.1.0
+        :target: https://coveralls.io/github/vincebluemvmt/bluemvmt-gsf?branch=refs/tags/0.1.0
     .. image:: https://api.cirrus-ci.com/github/<USER>/bluemvmt-gsf.svg?branch=main
-        :alt: Built Status
-        :target: https://cirrus-ci.com/github/<USER>/bluemvmt-gsf
+        :alt: Build Status
+        :target: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml/badge.svg)](https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml
     .. image:: https://readthedocs.org/projects/bluemvmt-gsf/badge/?version=latest
         :alt: ReadTheDocs
         :target: https://bluemvmt-gsf.readthedocs.io/en/stable/
