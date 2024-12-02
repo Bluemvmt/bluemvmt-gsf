@@ -25,7 +25,7 @@
     :target: https://pyscaffold.org/
 .. image:: https://coveralls.io/repos/github/vincebluemvmt/bluemvmt-gsf/badge.svg?branch=refs/tags/0.1.0
     :target: https://coveralls.io/github/vincebluemvmt/bluemvmt-gsf?branch=refs/tags/0.1.0
-.. image:: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml/badge.svg)
+.. image:: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml/badge.svg
     :alt: Build Status
     :target: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml
 
