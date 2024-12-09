@@ -1,6 +1,7 @@
 import argparse
 import csv
 import sys
+import types
 
 from bluemvmt_gsf.models import GsfAllRecords, GsfRecord, GsfSwathBathyPing, RecordType
 
@@ -56,21 +57,18 @@ if __name__ == "__main__":
                     fields = type(body).model_fields
                     for key in fields.keys():
                         field = fields[key]
-                        if list[float] | None is field.annotation:
+                        if isinstance(field.annotation, types.UnionType):
+                            print(f"list {key} is {field.annotation}")
                             value = getattr(body, key)
                             if value is not None:
                                 headers.append(key)
                         else:
+                            print(
+                                f"{key} is {field.annotation}, {type(field.annotation)}"
+                            )
                             headers.append(key)
                     headers.remove("sep")
                     headers.remove("reserved")
-                    headers.remove("sensor_data")
-                    headers.remove("sector_number")
-                    headers.remove("detection_info")
-                    headers.remove("system_cleaning")
-                    headers.remove("signal_to_noise")
-                    headers.remove("quality_flags")
-                    headers.remove("sensor_id")
                     writer.writeheader()
                     print(f"headers = {headers}")
                 fields = type(body).model_fields
