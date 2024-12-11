@@ -36,7 +36,7 @@ class GsfRecordBase(BaseModel):
 
     @field_serializer("time", when_used="json")
     def serialize_courses_in_order(self, time: datetime):
-        return time.timestamp()
+        return time.isoformat()
 
 
 class GsfAttitude(BaseModel):
@@ -120,17 +120,9 @@ class GsfSwathBathyPing(BaseModel):
 class GsfRecord(GsfRecordBase):
     time: datetime
     location: Geo | None = None
-    summary: GsfSwathBathySummary | None = None
-    mb_ping: GsfSwathBathyPing | None = None
-    # sb_ping: GsfSingleBeamPing
-    # svp: GsfSVP
-    # process_parameters: GsfProcessingParameters
-    # sensor_parameters: GsfSensorParameters
-    comment: GsfComment | None = None
-    history: GsfHistory | None = None
-    # nav_error: GsfNavigationError
-    # hv_nav_error: GsfHVNavigationError
-    attitude: GsfAttitude | None = None
+    body: (
+        GsfSwathBathySummary | GsfSwathBathyPing | GsfComment | GsfHistory | GsfAttitude
+    )
 
 
 class GsfAllRecords(BaseModel):

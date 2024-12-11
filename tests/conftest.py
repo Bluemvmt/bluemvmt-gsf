@@ -1,5 +1,5 @@
 """
-    Dummy conftest.py for bluemvmt_gsf.
+    Dummy contest.py for bluemvmt_gsf.
 
     If you don't know what this is for, just leave it empty.
     Read more about conftest.py under:
@@ -20,11 +20,17 @@ logging.getLogger().setLevel(logging.DEBUG)
 def pytest_addoption(parser):
     parser.addoption("--save-json", action="store", default="false")
     parser.addoption("--test-gsf-file", action="store", default="GSF3_09_test_file.gsf")
+    parser.addoption("--output-rec", action="store", default="false")
 
 
 @pytest.fixture(scope="session")
 def save_json(request) -> bool:
     return request.config.getoption("--save-json").lower() == "true"
+
+
+@pytest.fixture(scope="session")
+def output_rec(request) -> bool:
+    return request.config.getoption("--output-rec").lower() == "true"
 
 
 @pytest.fixture(scope="session")

@@ -41,7 +41,26 @@ def _double_pointer_to_array(original, num_values) -> list[float] | None:
         return None
 
 
+def _int_pointer_to_array(original, num_values) -> list[int] | None:
+    try:
+        return original[0:num_values]
+    except SystemError:
+        return None
+
+
 def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
+    """
+    Read a GSF binary file in its native format into the Pydantic GsfRecord.  This
+    yields a generator that will can be used in an interator to retrieve GsfRecord
+    in the file.
+
+    Args:
+        gsf_file:
+        file_name:
+
+    Returns:
+
+    """
     num_records = gsf_file.get_number_records(
         desired_record=RecordType.GSF_RECORD_HEADER.value
     )
@@ -70,7 +89,7 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
             version="03_09",
             record_type=RecordType.GSF_RECORD_ATTITUDE,
             time=timespec_to_datetime(record.attitude.attitude_time.contents),
-            attitude=gsf_attitude,
+            body=gsf_attitude,
         )
         yield pydantic_record
 
@@ -93,7 +112,7 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
             version="03_09",
             record_type=RecordType.GSF_RECORD_HISTORY,
             time=timespec_to_datetime(record.history.history_time),
-            history=gsf_history,
+            body=gsf_history,
         )
         yield pydantic_record
 
@@ -115,7 +134,7 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
             version="03_09",
             record_type=RecordType.GSF_RECORD_COMMENT,
             time=timespec_to_datetime(record.comment.comment_time),
-            comment=gsf_comment,
+            body=gsf_comment,
         )
         yield pydantic_record
 
@@ -135,7 +154,7 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
             version="03_09",
             record_type=RecordType.GSF_RECORD_SWATH_BATHY_SUMMARY,
             time=timespec_to_datetime(record.summary.start_time),
-            summary=gsf_summary,
+            body=gsf_summary,
         )
         yield pydantic_record
 
@@ -147,15 +166,16 @@ def gsf_read(gsf_file: GsfFile, file_name: str) -> GsfRecord:
         data_id, record = gsf_file.read(
             RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING.value, index
         )
-        gsf_ping = _convert_swath_bathy_ping(record.mb_ping)
+        (location, gsf_ping) = _convert_swath_bathy_ping(record.mb_ping)
         pydantic_record = GsfRecord(
+            location=location,
             source_file_name=file_name,
             record_id=data_id.recordID,
             record_number=data_id.record_number,
             version="03_09",
             record_type=RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING,
             time=timespec_to_datetime(record.mb_ping.ping_time),
-            mb_ping=gsf_ping,
+            body=gsf_ping,
         )
         yield pydantic_record
 
@@ -180,10 +200,11 @@ def _convert_em3_specific(sensor: c_gsfEM3Specific) -> GsfEM3Specific | None:
     return None
 
 
-def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> GsfSwathBathyPing:
+def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> (Geo, GsfSwathBathyPing):
     number_beams: int = ping.number_beams
+    location = Geo(latitude=ping.latitude, longitude=ping.longitude)
     #    _log.debug(f"sensor_data = {ping.sensor_data.gsfEM3Specific.model_number}")
-    return GsfSwathBathyPing(
+    return location, GsfSwathBathyPing(
         height=ping.height,
         sep=ping.sep,
         number_beams=ping.number_beams,
@@ -213,6 +234,9 @@ def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> GsfSwathBathyPing:
         quality_factor=_double_pointer_to_array(ping.quality_factor, ping.number_beams),
         receive_heave=_double_pointer_to_array(ping.receive_heave, ping.number_beams),
         depth_error=_double_pointer_to_array(ping.depth_error, ping.number_beams),
+        sector_number=_int_pointer_to_array(ping.sector_number, ping.number_beams),
+        detection_info=_int_pointer_to_array(ping.detection_info, ping.number_beams),
+        system_cleaning=_int_pointer_to_array(ping.detection_info, ping.number_beams),
         across_track_error=_double_pointer_to_array(
             ping.across_track_error, ping.number_beams
         ),
