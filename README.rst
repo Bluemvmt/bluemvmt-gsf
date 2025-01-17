@@ -36,7 +36,7 @@ bluemvmt-gsf
 ============
 
 
-    Add a short description here!
+    Generic Sensor Format decoder to pure Python objects/types.
 
 
 A longer description of your project goes here...
