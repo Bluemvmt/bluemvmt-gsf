@@ -39,7 +39,11 @@ bluemvmt-gsf
     Generic Sensor Format decoder to pure Python objects/types.
 
 
-A longer description of your project goes here...
+The gsfpy Python package is a simple ctype wrapper for the native C
+libgsf library and is awkward to use.  The bluemvmt-gsf package adds 
+a layer to output pure Python Pydantic objects and pure Python types
+that are much easier to use from your python code.
+
 
 
 .. _pyscaffold-notes:
