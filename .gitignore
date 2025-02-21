@@ -1,4 +1,8 @@
+# Multipass hidden files
 .fuse*
+
+# Test files and results
+test_files/*
 # Temporary and binary files
 *~
 *.py[cod]
