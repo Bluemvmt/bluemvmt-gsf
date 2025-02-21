@@ -4,8 +4,6 @@ from enum import Enum
 from pydantic import BaseModel, field_serializer
 from pydantic_core import from_json
 
-from .gsf_sensor_specific import GsfEM3Specific, GsfEM4Specific
-
 
 class RecordType(Enum):
     GSF_RECORD_HEADER = 1
@@ -68,12 +66,17 @@ class GsfSwathBathySummary(BaseModel):
     max_depth: float
 
 
+class GsfSensorData(BaseModel):
+    ping_counter: int | None = None
+    model_number: int | None = None
+
+
 class GsfSwathBathyPing(BaseModel):
     height: float
     sep: float
     number_beams: int
     center_beam: int
-    #    ping_flags_bits: str
+    ping_flags: int | None = None
     reserved: int
     tide_corrector: float
     gps_tide_corrector: float
@@ -114,7 +117,7 @@ class GsfSwathBathyPing(BaseModel):
     detection_window: list[float] | None = None
     mean_abs_coeff: list[float] | None = None
     sensor_id: int
-    sensor_data: GsfEM3Specific | GsfEM4Specific | None = None
+    sensor_data: GsfSensorData | None = None
 
 
 class GsfRecord(GsfRecordBase):
