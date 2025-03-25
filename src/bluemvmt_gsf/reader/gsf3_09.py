@@ -12,6 +12,7 @@ from ..models import (
     GsfEM3Specific,
     GsfHistory,
     GsfRecord,
+    GsfSensorData,
     GsfSwathBathyPing,
     GsfSwathBathySummary,
     RecordType,
@@ -203,13 +204,22 @@ def _convert_em3_specific(sensor: c_gsfEM3Specific) -> GsfEM3Specific | None:
 def _convert_swath_bathy_ping(ping: c_gsfSwathBathyPing) -> (Geo, GsfSwathBathyPing):
     number_beams: int = ping.number_beams
     location = Geo(latitude=ping.latitude, longitude=ping.longitude)
+    sensor_data_raw = ping.sensor_data.gsfEM3RawSpecific
+    sensor_data = GsfSensorData(
+        model_number=sensor_data_raw.model_number,
+        ping_counter=sensor_data_raw.ping_counter,
+    )
+    # _log.debug(f"sensor_data = {sensor_data.ping_counter}")
+    # _log.debug(f"ping_flags = {ping.ping_flags}")
     #    _log.debug(f"sensor_data = {ping.sensor_data.gsfEM3Specific.model_number}")
     return location, GsfSwathBathyPing(
+        sensor_data=sensor_data,
         height=ping.height,
         sep=ping.sep,
         number_beams=ping.number_beams,
         center_beam=ping.center_beam,
-        ping_flags_bits=ping.ping_flags,
+        ping_flags=ping.ping_flags,
+        ping_counter=sensor_data.ping_counter,
         reserved=ping.reserved,
         tide_corrector=ping.tide_corrector,
         gps_tide_corrector=ping.gps_tide_corrector,
