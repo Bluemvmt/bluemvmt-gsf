@@ -102,7 +102,7 @@ class GsfSwathBathyPing(BaseModel):
     across_track_error: list[float] | None = None
     along_track_error: list[float] | None = None
     quality_flags: str | None = None
-    #   beam_flags: str
+    beam_flags: str
     signal_to_noise: float | None = None
     beam_angle_forward: list[float] | None = None
     vertical_error: list[float] | None = None
