@@ -42,7 +42,8 @@ def swath_bathymetric_ping_json():
 
 @pytest.fixture(scope="session")
 def gsf_file_name(request):
-    return request.config.getoption("--test-gsf-file")
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    return f"{dir_path}/{request.config.getoption("--test-gsf-file")}"
 
 
 @pytest.fixture(scope="session")

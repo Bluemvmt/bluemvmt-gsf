@@ -1,11 +1,12 @@
 from datetime import datetime
-from enum import Enum
+from enum import IntEnum
 
 from pydantic import BaseModel, field_serializer
 from pydantic_core import from_json
 
 
-class RecordType(Enum):
+class RecordType(IntEnum):
+    GSF_NEXT_RECORD = 0
     GSF_RECORD_HEADER = 1
     GSF_RECORD_SWATH_BATHYMETRY_PING = 2
     GSF_RECORD_SOUND_VELOCITY_PROFILE = 3

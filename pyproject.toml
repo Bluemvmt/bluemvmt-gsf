@@ -5,7 +5,7 @@ description = "A client library for accessing Sidecar Manager API"
 authors = []
 readme = "README.rst"
 packages = [
-    {include = "bluemvmt-gsf"},
+    {include = "bluemvmt_gsf", from = "src"},
 ]
 include = ["CHANGELOG.md"]
 

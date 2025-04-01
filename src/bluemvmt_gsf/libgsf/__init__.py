@@ -1,12 +1,14 @@
-from ctypes import byref, c_int, c_uint32, string_at
-from os import Path, fsencode
-from types import Optional, Union
+from ctypes import byref, c_int, c_uint32, pointer, string_at
+from os import fsencode
+from pathlib import Path
+from typing import Optional, Union
 
 from ..models import RecordType
 from .bindings import (
     gsfClose,
     gsfGetNumberRecords,
     gsfIntError,
+    gsfNextJsonRecord,
     gsfOpen,
     gsfOpenBuffered,
     gsfRead,
@@ -39,8 +41,9 @@ class GsfFile:
     Represents an open connection to a GSF file
     """
 
-    def __init__(self, handle: c_int):
-        self._handle = handle
+    def __init__(self, handle: c_int, desired_record: c_int = RecordType.GSF_NEXT_RECORD):
+        self.handle = handle
+        self.desired_record = desired_record
 
     def __enter__(self):
         return self
@@ -55,33 +58,14 @@ class GsfFile:
         """
         _handle_failure(gsfClose(self._handle))
 
-    def read(
+    def next_json_record(
         self,
-        desired_record: RecordType = RecordType.GSF_NEXT_RECORD,
-        record_number: int = 0,
     ):
-        """
-        When the file is open in GSF_READONLY_INDEX or GSF_UPDATE_INDEX mode then the
-        record_number parameter may be used to indicate which instance of the record to
-        read.
-        :param desired_record: Record type to read
-        :param record_number: nth occurrence of the record to read from, starting from 1
-        :return: Tuple of c_gsfDataID and c_gsfRecords
-        :raises GsfException: Raised if anything went wrong
-        """
-        data_id: c_uint32 = c_uint32(0)
-        records = c_uint32(0)
-
-        bytes_read = gsfRead(
-            self._handle, desired_record, byref(data_id), byref(records)
-        )
-        _handle_failure(bytes_read)
-        while bytes_read > 0:
-            yield string_at(gsfRecordToJson(data_id, records))
-            bytes_read = gsfRead(
-                self._handle, desired_record, byref(data_id), byref(records)
-            )
-            _handle_failure(bytes_read)
+        
+        next_record = gsfNextJsonRecord(self.handle, self.desired_record)
+        while next_record.last_return_value > 0:
+            yield next_record.json_record
+            next_record = gsfNextJsonRecord(self.handle, self.desired_record)
 
     def get_number_records(self, desired_record: RecordType) -> int:
         """
@@ -114,7 +98,7 @@ def open_gsf(
         path = str(path)
 
     _handle_failure(
-        gsfOpen(fsencode(path), 2, byref(handle))
+        gsfOpen(fsencode(path), byref(handle))
         if buffer_size is None
         else gsfOpenBuffered(path.encode(), 2, byref(handle), buffer_size)
     )

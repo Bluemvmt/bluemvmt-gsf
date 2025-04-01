@@ -1,5 +1,7 @@
 import sys
 
+gsf_version = "3.09"
+
 if sys.version_info[:2] >= (3, 12):
     # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
     from importlib.metadata import PackageNotFoundError, version  # pragma: no cover

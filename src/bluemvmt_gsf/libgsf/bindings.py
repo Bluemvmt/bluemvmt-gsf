@@ -5,7 +5,8 @@ from platform import machine
 
 from ..models import RecordType
 
-_libgsf_abs_path = str(Path(__file__) / "lib" / f"libgsf-{machine()}-03-08.so")
+gsf_version = "03.09"
+_libgsf_abs_path = str(Path(__file__).parent / "lib" / f"libgsf-{machine()}-{gsf_version}.so")
 
 # Check if the libgsf shared object library location is specified in the environment.
 # If so, use the specified library in preference to the bundled version. Handle the
@@ -26,10 +27,10 @@ except OSError as osex:
 _libgsf.gsfClose.argtypes = [c_int]
 _libgsf.gsfClose.restype = c_int
 
-_libgsf.gsfOpen.argtypes = [c_char_p, (POINTER(c_int))]
+_libgsf.gsfOpen.argtypes = [c_char_p, c_int, (POINTER(c_int))]
 _libgsf.gsfOpen.restype = c_int
 
-_libgsf.gsfOpenBuffered.argtypes = [c_char_p, (POINTER(c_int)), c_int]
+_libgsf.gsfOpenBuffered.argtypes = [c_char_p, c_int, (POINTER(c_int)), c_int]
 _libgsf.gsfOpenBuffered.restype = c_int
 
 _libgsf.gsfIntError.argtypes = []
@@ -53,8 +54,22 @@ _libgsf.gsfSeek.argtypes = [c_int, c_int]
 _libgsf.gsfSeek.restype = c_int
 
 _libgsf.gsfRecord_toJson.argtypes = [c_uint32, c_uint32]
-_libgsf.gsfRecord_toJson.restype = [c_char_p]
+_libgsf.gsfRecord_toJson.restype = c_char_p
 
+_libgsf.gsfGetNumberRecords.argtypes = [c_int, c_int]
+_libgsf.gsfGetNumberRecords.restype = c_int
+
+from ctypes import Structure, c_int, c_uint
+
+
+class c_gsfNextJsonRecord(Structure):
+    _fields_ = [
+        ("last_return_value", c_int),
+        ("json_record", c_char_p)
+    ]
+
+_libgsf.gsfNextJsonRecord.argtypes = [c_int, c_int]
+_libgsf.gsfNextJsonRecord.restype = c_gsfNextJsonRecord
 
 def gsfOpen(filename: bytes, p_handle) -> int:
     """
@@ -63,7 +78,7 @@ def gsfOpen(filename: bytes, p_handle) -> int:
     :param p_handle: Instance of POINTER(c_int)
     :return: 0 if successful, otherwise -1
     """
-    return _libgsf.gsfOpen(filename, p_handle)
+    return _libgsf.gsfOpen(filename, 2, p_handle)
 
 
 def gsfOpenBuffered(filename: bytes, p_handle, buf_size: int) -> int:
@@ -74,7 +89,11 @@ def gsfOpenBuffered(filename: bytes, p_handle, buf_size: int) -> int:
     :param buf_size: c_int
     :return: 0 if successful, otherwise -1
     """
-    return _libgsf.gsfOpenBuffered(filename, p_handle, buf_size)
+    return _libgsf.gsfOpenBuffered(filename, 2, p_handle, buf_size)
+
+
+def gsfNextJsonRecord(handle: c_int, desired_record: c_int) -> c_gsfNextJsonRecord:
+    return _libgsf.gsfNextJsonRecord(handle, desired_record)
 
 
 def gsfClose(handle: c_int) -> int:
@@ -88,8 +107,8 @@ def gsfClose(handle: c_int) -> int:
 def gsfRead(
     handle: c_int,
     desired_record: RecordType,
-    p_data_id: c_uint32,
-    p_records: c_uint32,
+    p_data_id,
+    p_records,
     p_stream=None,
     max_size=0,
 ) -> int:
@@ -112,6 +131,15 @@ def gsfRead(
         p_stream,
         max_size,
     )
+
+def gsfGetNumberRecords(handle: c_int, desired_record: RecordType) -> int:
+    """
+    File must be open for direct access (GSF_READONLY_INDEX or GSF_UPDATE_INDEX)
+    :param handle: c_int
+    :param desired_record: gsfpy3_08.enums.RecordType
+    :return: number of records of type desired_record, otherwise -1
+    """
+    return _libgsf.gsfGetNumberRecords(handle, desired_record)
 
 
 def gsfRecordToJson(p_data_id: c_uint32, p_records: c_uint32) -> c_char_p:
