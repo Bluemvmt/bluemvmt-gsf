@@ -1,4 +1,4 @@
-from ctypes import byref, c_int, c_uint32, pointer, string_at
+from ctypes import byref, c_int, c_uint32
 from os import fsencode
 from pathlib import Path
 from typing import Optional, Union
@@ -54,7 +54,7 @@ class GsfFile:
         Once this method has been called further operations will fail
         :raises GsfException: Raised if anything went wrong
         """
-        _handle_failure(gsfClose(self._handle))
+        _handle_failure(gsfClose(self.handle))
 
     def next_json_record(
         self,
@@ -72,7 +72,7 @@ class GsfFile:
         :param desired_record: Specifies the type of record to count
         :return: Number of records of type desired_record, otherwise -1
         """
-        count = gsfGetNumberRecords(self._handle, desired_record)
+        count = gsfGetNumberRecords(self.handle, desired_record)
         _handle_failure(count)
         return count
 
