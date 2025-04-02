@@ -1,15 +1,14 @@
 import argparse
 
-from gsfpy3_09 import FileMode, open_gsf
+from bluemvmt_gsf.libgsf import open_gsf
 
 from bluemvmt_gsf.models import GsfRecord
-from bluemvmt_gsf.reader.gsf3_09 import gsf_read
 
 
 def test_nested_yield(file_name: str):
-    with open_gsf(file_name, mode=FileMode.GSF_READONLY_INDEX) as gf:
+    with open_gsf(file_name) as gf:
         record: GsfRecord
-        for record in gsf_read(gf, args.gsf_file):
+        for record in gf.next_json_record():
             yield record
 
 
