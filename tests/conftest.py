@@ -11,7 +11,7 @@ import logging
 import os
 
 import pytest
-from gsfpy3_09 import FileMode, open_gsf
+from bluemvmt_gsf.libgsf import open_gsf
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -42,8 +42,7 @@ def swath_bathymetric_ping_json():
 
 @pytest.fixture(scope="session")
 def gsf_file_name(request):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    return f"{dir_path}/{request.config.getoption("--test-gsf-file")}"
+    return request.config.getoption("--test-gsf-file")
 
 
 @pytest.fixture(scope="session")
@@ -54,5 +53,5 @@ def gsf_test_file_path(gsf_file_name):
 
 @pytest.fixture(scope="function")
 def gsf_file(gsf_test_file_path):
-    with open_gsf(gsf_test_file_path, mode=FileMode.GSF_READONLY_INDEX) as gsf_file:
+    with open_gsf(gsf_test_file_path) as gsf_file:
         yield gsf_file
