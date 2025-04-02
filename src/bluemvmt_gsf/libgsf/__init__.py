@@ -11,8 +11,6 @@ from .bindings import (
     gsfNextJsonRecord,
     gsfOpen,
     gsfOpenBuffered,
-    gsfRead,
-    gsfRecordToJson,
     gsfStringError,
 )
 

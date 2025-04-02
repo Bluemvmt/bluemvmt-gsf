@@ -5,7 +5,7 @@ from platform import machine
 
 from ..models import RecordType
 
-gsf_version = "03.09"
+gsf_version = environ.get("GSF_VERSION", "03.09")
 _libgsf_abs_path = str(Path(__file__).parent / "lib" / f"libgsf-{machine()}-{gsf_version}.so")
 
 # Check if the libgsf shared object library location is specified in the environment.
@@ -74,7 +74,6 @@ _libgsf.gsfNextJsonRecord.restype = c_gsfNextJsonRecord
 def gsfOpen(filename: bytes, p_handle) -> int:
     """
     :param filename: bytestring e.g. b'path/to/file.gsf'
-    :param mode: gsfpy3_08.enums.FileMode
     :param p_handle: Instance of POINTER(c_int)
     :return: 0 if successful, otherwise -1
     """
@@ -84,7 +83,6 @@ def gsfOpen(filename: bytes, p_handle) -> int:
 def gsfOpenBuffered(filename: bytes, p_handle, buf_size: int) -> int:
     """
     :param filename: bytestring e.g. b'path/to/file.gsf'
-    :param mode: gsfpy3_08.enums.FileMode
     :param p_handle: Instance of POINTER(c_int)
     :param buf_size: c_int
     :return: 0 if successful, otherwise -1
@@ -104,34 +102,6 @@ def gsfClose(handle: c_int) -> int:
     return _libgsf.gsfClose(handle)
 
 
-def gsfRead(
-    handle: c_int,
-    desired_record: RecordType,
-    p_data_id,
-    p_records,
-    p_stream=None,
-    max_size=0,
-) -> int:
-    """
-    :param handle: int
-    :param desired_record: gsfpy3_08.enums.RecordType
-    :param p_data_id: POINTER(gsfpy3_08.gsfDataID.c_gsfDataID)
-    :param p_records: POINTER(gsfpy3_08.gsfRecords.c_gsfRecords)
-    :param p_stream: POINTER(c_ubyte)
-    :param max_size: int
-    :return: number of bytes read if successful, otherwise -1. Note that contents of the
-             POINTER parameters p_data_id, p_records and p_stream will be updated upon
-             successful read.
-    """
-    return _libgsf.gsfRead(
-        handle,
-        desired_record,
-        p_data_id,
-        p_records,
-        p_stream,
-        max_size,
-    )
-
 def gsfGetNumberRecords(handle: c_int, desired_record: RecordType) -> int:
     """
     File must be open for direct access (GSF_READONLY_INDEX or GSF_UPDATE_INDEX)
@@ -140,10 +110,6 @@ def gsfGetNumberRecords(handle: c_int, desired_record: RecordType) -> int:
     :return: number of records of type desired_record, otherwise -1
     """
     return _libgsf.gsfGetNumberRecords(handle, desired_record)
-
-
-def gsfRecordToJson(p_data_id: c_uint32, p_records: c_uint32) -> c_char_p:
-    return _libgsf.gsfRecord_toJson(p_data_id, p_records)
 
 
 def gsfIntError() -> int:
