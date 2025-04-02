@@ -71,13 +71,13 @@ class c_gsfNextJsonRecord(Structure):
 _libgsf.gsfNextJsonRecord.argtypes = [c_int, c_int]
 _libgsf.gsfNextJsonRecord.restype = c_gsfNextJsonRecord
 
-def gsfOpen(filename: bytes, p_handle) -> int:
+def gsfOpen(filename: bytes, mode: int, p_handle) -> int:
     """
     :param filename: bytestring e.g. b'path/to/file.gsf'
     :param p_handle: Instance of POINTER(c_int)
     :return: 0 if successful, otherwise -1
     """
-    return _libgsf.gsfOpen(filename, 2, p_handle)
+    return _libgsf.gsfOpen(filename, mode, p_handle)
 
 
 def gsfOpenBuffered(filename: bytes, p_handle, buf_size: int) -> int:
@@ -87,7 +87,7 @@ def gsfOpenBuffered(filename: bytes, p_handle, buf_size: int) -> int:
     :param buf_size: c_int
     :return: 0 if successful, otherwise -1
     """
-    return _libgsf.gsfOpenBuffered(filename, 2, p_handle, buf_size)
+    return _libgsf.gsfOpenBuffered(filename, mode, p_handle, buf_size)
 
 
 def gsfNextJsonRecord(handle: c_int, desired_record: c_int) -> c_gsfNextJsonRecord:

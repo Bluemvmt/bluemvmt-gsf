@@ -1,4 +1,5 @@
-from ctypes import byref, c_int, c_uint32
+from ctypes import byref, c_int
+from enum import IntEnum
 from os import fsencode
 from pathlib import Path
 from typing import Optional, Union
@@ -13,6 +14,11 @@ from .bindings import (
     gsfOpenBuffered,
     gsfStringError,
 )
+
+
+class FileMode(IntEnum):
+    GSF_READONLY = 2
+    GSF_READONLY_INDEX = 4
 
 
 class GsfException(Exception):
@@ -79,6 +85,7 @@ class GsfFile:
 
 def open_gsf(
     path: Union[str, Path],
+    mode: int = FileMode.GSF_READONLY_INDEX,
     buffer_size: Optional[int] = None,
 ) -> GsfFile:
     """
@@ -96,9 +103,9 @@ def open_gsf(
         path = str(path)
 
     _handle_failure(
-        gsfOpen(fsencode(path), byref(handle))
+        gsfOpen(fsencode(path), mode, byref(handle))
         if buffer_size is None
-        else gsfOpenBuffered(path.encode(), 2, byref(handle), buffer_size)
+        else gsfOpenBuffered(path.encode(), mode, byref(handle), buffer_size)
     )
 
     return GsfFile(handle)
