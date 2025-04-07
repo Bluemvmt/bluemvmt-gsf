@@ -1,18 +1,17 @@
 import sys
 
-gsf_version = "3.09"
 
-if sys.version_info[:2] >= (3, 12):
-    # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
-    from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
-else:
-    from importlib_metadata import PackageNotFoundError, version  # pragma: no cover
+class Gsf:
+    def __init__(self, version: str = "03.10"):
+        self._version = version
 
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "bluemvmt-gsf"
-    __version__ = version(dist_name)
-except PackageNotFoundError:  # pragma: no cover
-    __version__ = "unknown"
-finally:
-    del version, PackageNotFoundError
+    @property
+    def version(self) -> str:
+        return self._version
+
+    @version.setter
+    def version(self, value: str):
+        self._version = value
+
+
+gsf: Gsf = Gsf()
