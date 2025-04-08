@@ -25,19 +25,6 @@ class Geo(BaseModel):
     longitude: float
 
 
-class GsfRecordBase(BaseModel):
-    time: datetime
-    source_file_name: str
-    record_id: int
-    record_number: int
-    record_type: RecordType
-    version: str
-
-    @field_serializer("time", when_used="json")
-    def serialize_courses_in_order(self, time: datetime):
-        return time.isoformat()
-
-
 class GsfAttitude(BaseModel):
     num_measurements: int
     pitch: float | None = None
@@ -61,10 +48,20 @@ class GsfComment(BaseModel):
 class GsfSwathBathySummary(BaseModel):
     start_time: datetime
     end_time: datetime
-    min_location: Geo
-    max_location: Geo
+    min_latitude: float
+    min_longitude: float
+    max_latitude: float
+    max_longitude: float
     min_depth: float
     max_depth: float
+
+    @property
+    def min_location(self) -> Geo:
+        return Geo(latitude=self.min_latitude, longitude=self.min_longitude)
+    
+
+class GsfHeader(BaseModel):
+    version: str
 
 
 class GsfSensorData(BaseModel):
@@ -103,7 +100,7 @@ class GsfSwathBathyPing(BaseModel):
     across_track_error: list[float] | None = None
     along_track_error: list[float] | None = None
     quality_flags: str | None = None
-    beam_flags: str
+    beam_flags: list[int] | None = None
     signal_to_noise: float | None = None
     beam_angle_forward: list[float] | None = None
     vertical_error: list[float] | None = None
@@ -121,12 +118,11 @@ class GsfSwathBathyPing(BaseModel):
     sensor_data: GsfSensorData | None = None
 
 
-class GsfRecord(GsfRecordBase):
-    time: datetime
-    location: Geo | None = None
-    body: (
-        GsfSwathBathySummary | GsfSwathBathyPing | GsfComment | GsfHistory | GsfAttitude
-    )
+class GsfRecord(BaseModel):
+    record_type: RecordType
+    mb_ping: GsfSwathBathyPing | None = None
+    summary: GsfSwathBathySummary | None = None
+    header: GsfHeader | None = None
 
 
 class GsfAllRecords(BaseModel):
