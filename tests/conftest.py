@@ -11,7 +11,6 @@ import logging
 import os
 
 import pytest
-from bluemvmt_gsf.libgsf import FileMode, open_gsf
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -49,9 +48,3 @@ def gsf_file_name(request):
 def gsf_test_file_path(gsf_file_name):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     return f"{dir_path}/{gsf_file_name}"
-
-
-@pytest.fixture(scope="function")
-def gsf_file(gsf_test_file_path):
-    with open_gsf(gsf_test_file_path, mode=FileMode.GSF_READONLY_INDEX) as gsf_file:
-        yield gsf_file
