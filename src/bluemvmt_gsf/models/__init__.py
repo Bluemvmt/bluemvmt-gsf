@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import IntEnum
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel
 from pydantic_core import from_json
 
 
@@ -58,7 +58,7 @@ class GsfSwathBathySummary(BaseModel):
     @property
     def min_location(self) -> Geo:
         return Geo(latitude=self.min_latitude, longitude=self.min_longitude)
-    
+
 
 class GsfHeader(BaseModel):
     version: str
