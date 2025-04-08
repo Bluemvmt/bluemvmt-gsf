@@ -1,15 +1,8 @@
 import argparse
 from time import perf_counter as pc
-from bluemvmt_gsf.libgsf import open_gsf
 
+from bluemvmt_gsf.libgsf import GsfFile
 from bluemvmt_gsf.models import GsfRecord, RecordType, deserialize_record
-
-
-def test_nested_yield(file_name: str, desired_record: RecordType):
-    with open_gsf(file_name) as gf:
-        record: GsfRecord
-        for record in gf.next_json_record(desired_record=desired_record):
-            yield record
 
 
 if __name__ == "__main__":
@@ -31,12 +24,12 @@ if __name__ == "__main__":
         "--desired-record",
         dest="desired_record",
         type=int,
-        default=RecordType.GSF_NEXT_RECORD
+        default=RecordType.GSF_NEXT_RECORD,
     )
     args = parser.parse_args()
 
     print("record_type,size,time")
-    with open_gsf(args.gsf_file) as gf:
+    with GsfFile(args.gsf_file) as gf:
         record: GsfRecord
         for record in gf.next_json_record(desired_record=args.desired_record):
             if record is not None:
