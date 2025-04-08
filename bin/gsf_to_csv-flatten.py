@@ -4,6 +4,7 @@ import sys
 import types
 
 from bluemvmt_gsf.models import GsfRecord, GsfSwathBathyPing, RecordType
+from bluemvmt_gsf.models.mappings import RECORD_TYPES, SENSOR_TYPES  # , SUBRECORDS
 from bluemvmt_gsf.reader.json_reader import read_from_json
 
 ignore_common_headers = ["sep", "reserved"]
@@ -11,20 +12,35 @@ ignore_common_headers = ["sep", "reserved"]
 
 def get_headers(body: GsfSwathBathyPing) -> (list[str], list[str]):
     fields = type(body).model_fields
-    common_headers: list[str] = ["time", "latitude", "longitude"]
+    common_headers: list[str] = [
+        "time",
+        "latitude",
+        "longitude",
+        "sensor.id",
+        "sensor.name",
+        "sensor.model_number",
+        "sensor.ping_counter",
+        "record_type",
+    ]
     list_headers: list[str] = []
     for key in fields.keys():
         field = fields[key]
-        if isinstance(field.annotation, types.UnionType):
-            value = getattr(body, key)
-            if value is not None:
-                list_headers.append(key)
+        if key == "sensor_id" or key == "sensor_data":
+            continue
+
+        print(f"{key} = {field.annotation}")
+        if key == "ping_flags":
+            common_headers.append("ping_flags")
         else:
-            common_headers.append(key)
+            if isinstance(field.annotation, types.UnionType):
+                value = getattr(body, key)
+                if value is not None:
+                    list_headers.append(key)
+            else:
+                print(f"Adding {key} to common_headers")
+                common_headers.append(key)
 
-    # print(f"common_headers = {common_headers}")
-    # print(f"list_headers = {list_headers}")
-
+    print(f"common_headers = {common_headers}")
     for header in ignore_common_headers:
         common_headers.remove(header)
 
@@ -54,7 +70,10 @@ def output_json(cli_args):
                     all_headers: list[str]
                     if records_read == 1:
                         (common_headers, list_headers) = get_headers(body=body)
-                        all_headers = common_headers + list_headers
+                        all_headers = common_headers + [
+                            f"mb_ping.{h}" for h in list_headers
+                        ]
+                        print(f"all_headers = {all_headers}")
                         writer = csv.DictWriter(csvfile, fieldnames=all_headers)
                         writer.writeheader()
                         writer = csv.DictWriter(
@@ -62,19 +81,26 @@ def output_json(cli_args):
                         )
                         writer.writeheader()
 
+                    sensor_id = body.sensor_id
                     common_row_dict = {
                         "time": record.time,
                         "latitude": record.location.latitude,
                         "longitude": record.location.longitude,
+                        "record_type": RECORD_TYPES[record.record_type.value],
+                        "sensor.name": SENSOR_TYPES[sensor_id].value,
+                        "sensor.model_number": body.sensor_data.model_number,
+                        "sensor.ping_counter": body.sensor_data.ping_counter,
+                        "sensor.id": sensor_id,
                     }
                     writer = csv.DictWriter(csvfile, fieldnames=all_headers)
-                    for header in common_headers[3:]:
+                    for header in common_headers[8:]:
                         value = getattr(body, header)
                         common_row_dict[header] = value
                     list_row_dict = {}
                     for header in list_headers:
                         value = getattr(body, header)
-                        list_row_dict[header] = value
+                        list_row_dict[f"mb_ping.{header}"] = value
+                    #                   print(f"list_row_dict = {list_row_dict}")
                     row_dict = dict(common_row_dict)
                     row_dict.update(list_row_dict)
                     writer.writerow(row_dict)
@@ -87,7 +113,7 @@ def output_json(cli_args):
                         values_dict = {}
                         # print(f"list_value_arrays = {list_value_arrays}")
                         for key in list_value_arrays.keys():
-                            values_dict[key] = list_value_arrays[key][i]
+                            values_dict[f"mb_ping.{key}"] = list_value_arrays[key][i]
                         row_dict = dict(common_row_dict)
                         row_dict.update(values_dict)
                         writer.writerow(row_dict)

@@ -1,13 +1,12 @@
 from datetime import datetime
-from enum import Enum
+from enum import IntEnum
 
 from pydantic import BaseModel, field_serializer
 from pydantic_core import from_json
 
-from .gsf_sensor_specific import GsfEM3Specific, GsfEM4Specific
 
-
-class RecordType(Enum):
+class RecordType(IntEnum):
+    GSF_NEXT_RECORD = 0
     GSF_RECORD_HEADER = 1
     GSF_RECORD_SWATH_BATHYMETRY_PING = 2
     GSF_RECORD_SOUND_VELOCITY_PROFILE = 3
@@ -24,19 +23,6 @@ class RecordType(Enum):
 class Geo(BaseModel):
     latitude: float
     longitude: float
-
-
-class GsfRecordBase(BaseModel):
-    time: datetime
-    source_file_name: str
-    record_id: int
-    record_number: int
-    record_type: RecordType
-    version: str
-
-    @field_serializer("time", when_used="json")
-    def serialize_courses_in_order(self, time: datetime):
-        return time.isoformat()
 
 
 class GsfAttitude(BaseModel):
@@ -62,10 +48,25 @@ class GsfComment(BaseModel):
 class GsfSwathBathySummary(BaseModel):
     start_time: datetime
     end_time: datetime
-    min_location: Geo
-    max_location: Geo
+    min_latitude: float
+    min_longitude: float
+    max_latitude: float
+    max_longitude: float
     min_depth: float
     max_depth: float
+
+    @property
+    def min_location(self) -> Geo:
+        return Geo(latitude=self.min_latitude, longitude=self.min_longitude)
+    
+
+class GsfHeader(BaseModel):
+    version: str
+
+
+class GsfSensorData(BaseModel):
+    ping_counter: int | None = None
+    model_number: int | None = None
 
 
 class GsfSwathBathyPing(BaseModel):
@@ -73,7 +74,7 @@ class GsfSwathBathyPing(BaseModel):
     sep: float
     number_beams: int
     center_beam: int
-    #    ping_flags_bits: str
+    ping_flags: int | None = None
     reserved: int
     tide_corrector: float
     gps_tide_corrector: float
@@ -99,7 +100,7 @@ class GsfSwathBathyPing(BaseModel):
     across_track_error: list[float] | None = None
     along_track_error: list[float] | None = None
     quality_flags: str | None = None
-    #   beam_flags: str
+    beam_flags: list[int] | None = None
     signal_to_noise: float | None = None
     beam_angle_forward: list[float] | None = None
     vertical_error: list[float] | None = None
@@ -114,15 +115,14 @@ class GsfSwathBathyPing(BaseModel):
     detection_window: list[float] | None = None
     mean_abs_coeff: list[float] | None = None
     sensor_id: int
-    sensor_data: GsfEM3Specific | GsfEM4Specific | None = None
+    sensor_data: GsfSensorData | None = None
 
 
-class GsfRecord(GsfRecordBase):
-    time: datetime
-    location: Geo | None = None
-    body: (
-        GsfSwathBathySummary | GsfSwathBathyPing | GsfComment | GsfHistory | GsfAttitude
-    )
+class GsfRecord(BaseModel):
+    record_type: RecordType
+    mb_ping: GsfSwathBathyPing | None = None
+    summary: GsfSwathBathySummary | None = None
+    header: GsfHeader | None = None
 
 
 class GsfAllRecords(BaseModel):

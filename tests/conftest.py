@@ -11,7 +11,7 @@ import logging
 import os
 
 import pytest
-from gsfpy3_09 import FileMode, open_gsf
+from bluemvmt_gsf.libgsf import FileMode, open_gsf
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
