@@ -4,9 +4,10 @@ from pathlib import Path
 from platform import machine
 
 from ..models import RecordType
+from .. import gsf
 
-gsf_version = environ.get("GSF_VERSION", "03.09")
-_libgsf_abs_path = str(Path(__file__).parent / "lib" / f"libgsf-{machine()}-{gsf_version}.so")
+#gsf_version = environ.get("GSF_VERSION", "03.09")
+_libgsf_abs_path = str(Path(__file__).parent / "lib" / f"libgsf-{machine()}-{gsf.version}.so")
 
 # Check if the libgsf shared object library location is specified in the environment.
 # If so, use the specified library in preference to the bundled version. Handle the
@@ -53,13 +54,10 @@ _libgsf.gsfRead.restype = c_int
 _libgsf.gsfSeek.argtypes = [c_int, c_int]
 _libgsf.gsfSeek.restype = c_int
 
-_libgsf.gsfRecord_toJson.argtypes = [c_uint32, c_uint32]
-_libgsf.gsfRecord_toJson.restype = c_char_p
-
 _libgsf.gsfGetNumberRecords.argtypes = [c_int, c_int]
 _libgsf.gsfGetNumberRecords.restype = c_int
 
-from ctypes import Structure, c_int, c_uint
+from ctypes import Structure, c_int
 
 
 class c_gsfNextJsonRecord(Structure):

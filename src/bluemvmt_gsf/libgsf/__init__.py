@@ -64,12 +64,13 @@ class GsfFile:
 
     def next_json_record(
         self,
+        desired_record: int = 0
     ):
         
-        next_record = gsfNextJsonRecord(self.handle, self.desired_record)
+        next_record = gsfNextJsonRecord(self.handle, desired_record)
         while next_record.last_return_value > 0:
             yield next_record.json_record
-            next_record = gsfNextJsonRecord(self.handle, self.desired_record)
+            next_record = gsfNextJsonRecord(self.handle, desired_record)
 
     def get_number_records(self, desired_record: RecordType) -> int:
         """
