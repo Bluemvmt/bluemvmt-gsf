@@ -120,9 +120,12 @@ class GsfSwathBathyPing(BaseModel):
 
 class GsfRecord(BaseModel):
     record_type: RecordType
-    mb_ping: GsfSwathBathyPing | None = None
-    summary: GsfSwathBathySummary | None = None
-    header: GsfHeader | None = None
+    file_name: str | None = None
+    gsf_version: str | None = None
+    timestamp: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    json_record: GsfSwathBathyPing | GsfSwathBathySummary | GsfComment | GsfAttitude | None = None
 
 
 class GsfAllRecords(BaseModel):

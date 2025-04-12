@@ -21,6 +21,7 @@ class GsfFile:
     def __init__(
         self,
         path: Union[str, Path],
+        include_denormalized_fields: bool = False,
         mode: int = FileMode.GSF_READONLY_INDEX,
         desired_record: c_int = RecordType.GSF_NEXT_RECORD,
         gsf_version: GsfVersion = GsfVersion._3_10,
@@ -28,6 +29,9 @@ class GsfFile:
     ):
         self.gsf = Gsf(gsf_version=gsf_version)
         self.desired_record = desired_record
+        self.include_denormalized_fields: int = 0
+        if include_denormalized_fields is True:
+            self.include_denormalized_fields = 1
 
         if isinstance(path, Path):
             self.path = str(path)
@@ -58,10 +62,10 @@ class GsfFile:
         self._handle_failure(self.gsf.gsfClose(self.handle))
 
     def next_json_record(self, desired_record: int = 0):
-        next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record)
+        next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record, self.include_denormalized_fields )
         while next_record.last_return_value > 0:
             yield next_record.json_record
-            next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record)
+            next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record, self.include_denormalized_fields)
 
     def get_number_records(self, desired_record: RecordType) -> int:
         """

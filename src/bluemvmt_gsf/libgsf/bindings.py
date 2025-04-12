@@ -91,9 +91,9 @@ class Gsf:
         return self._libgsf.gsfOpenBuffered(filename, mode, p_handle, buf_size)
 
     def gsfNextJsonRecord(
-        self, handle: c_int, desired_record: c_int
+        self, handle: c_int, desired_record: c_int, include_denormalized_fields: c_int
     ) -> c_gsfNextJsonRecord:
-        return self._libgsf.gsfNextJsonRecord(handle, desired_record)
+        return self._libgsf.gsfNextJsonRecord(handle, desired_record, include_denormalized_fields)
 
     def gsfClose(self, handle: c_int) -> int:
         """
