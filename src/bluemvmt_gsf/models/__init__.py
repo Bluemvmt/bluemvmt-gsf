@@ -4,6 +4,8 @@ from enum import IntEnum
 from pydantic import BaseModel
 from pydantic_core import from_json
 
+from .gsf_sensor_specific import GsfEM4Specific
+
 
 class RecordType(IntEnum):
     GSF_NEXT_RECORD = 0
@@ -64,11 +66,6 @@ class GsfHeader(BaseModel):
     version: str
 
 
-class GsfSensorData(BaseModel):
-    ping_counter: int | None = None
-    model_number: int | None = None
-
-
 class GsfSwathBathyPing(BaseModel):
     height: float
     sep: float
@@ -115,7 +112,8 @@ class GsfSwathBathyPing(BaseModel):
     detection_window: list[float] | None = None
     mean_abs_coeff: list[float] | None = None
     sensor_id: int
-    sensor_data: GsfSensorData | None = None
+    sensor_name: str
+    sensor_data: GsfEM4Specific | None = None
 
 
 class GsfRecord(BaseModel):
@@ -125,7 +123,14 @@ class GsfRecord(BaseModel):
     timestamp: float | None = None
     latitude: float | None = None
     longitude: float | None = None
-    json_record: GsfSwathBathyPing | GsfSwathBathySummary | GsfComment | GsfAttitude | None = None
+    json_record: (
+        GsfSwathBathyPing
+        | GsfSwathBathySummary
+        | GsfComment
+        | GsfAttitude
+        | GsfHistory
+        | None
+    ) = None
 
 
 class GsfAllRecords(BaseModel):

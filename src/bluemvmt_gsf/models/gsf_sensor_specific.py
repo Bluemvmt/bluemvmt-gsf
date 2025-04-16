@@ -20,9 +20,9 @@ class GsfEM3RunTime(BaseModel):
     receive_bandwidth: int
     receive_gain: int
     cross_over_angle: int
-    ssv_source: int
+    ssv_source: str | None = None
     swath_width: int
-    beam_spacing: int
+    beam_spacing: str
     coverage_sector: int
     stabilization: int
     port_swath_width: int
@@ -50,12 +50,12 @@ class GsfEMRunTime(BaseModel):
     dg_time: datetime
     ping_counter: int
     serial_number: int
-    operator_station_status: bytes
-    processing_unit_status: bytes
-    bsp_status: bytes
-    head_transceiver_status: bytes
-    mode: bytes
-    filter_id: bytes
+    operator_station_status: int
+    processing_unit_status: int
+    bsp_status: int
+    head_transceiver_status: int
+    mode: int
+    filter_id: int
     min_depth: float
     max_depth: float
     absorption: float
@@ -66,11 +66,11 @@ class GsfEMRunTime(BaseModel):
     rx_bandwidth: float
     rx_fixed_gain: float
     tvg_cross_over_angle: float
-    ssv_source: int
+    ssv_source: str | None = None
     max_port_swath_width: int
-    beam_spacing: int
+    beam_spacing: str
     max_port_coverage: int
-    stabilization: bytes
+    stabilization: int
     max_stbd_coverage: int
     max_stbd_swath_width: int
     durotong_speed: float
@@ -122,7 +122,7 @@ class GsfEM4TxSector(BaseModel):
     transmit_delay: float
     center_frequency: float
     mean_absorption: float
-    waveform_id: int
+    waveform_id: str | None = None
     sector_number: int
     signal_bandwidth: float
 
