@@ -2,7 +2,7 @@ from ctypes import byref, c_int
 from enum import IntEnum
 from os import fsencode
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
 from ..models import RecordType
 from .bindings import Gsf, GsfVersion
@@ -21,13 +21,17 @@ class GsfFile:
     def __init__(
         self,
         path: Union[str, Path],
+        include_denormalized_fields: bool = False,
         mode: int = FileMode.GSF_READONLY_INDEX,
         desired_record: c_int = RecordType.GSF_NEXT_RECORD,
         gsf_version: GsfVersion = GsfVersion._3_10,
-        buffer_size: Optional[int] = None,
+        buffer_size: int = 0,
     ):
         self.gsf = Gsf(gsf_version=gsf_version)
         self.desired_record = desired_record
+        self.include_denormalized_fields: int = 0
+        if include_denormalized_fields is True:
+            self.include_denormalized_fields = 1
 
         if isinstance(path, Path):
             self.path = str(path)
@@ -35,12 +39,13 @@ class GsfFile:
             self.path = path
 
         self.handle = c_int(0)
-        if buffer_size is None:
-            retvalue: int = self.gsf.gsfOpen(fsencode(self.path), mode, byref(self.handle))
-        else:
-            retvalue: int = self.gsf.gsfOpenBuffered(
-                self.path.encode(), mode, byref(self.handle), buffer_size
-            )
+        retvalue: int = self.gsf.gsfOpenForJson(
+            fsencode(self.path),
+            mode,
+            byref(self.handle),
+            0,
+            self.include_denormalized_fields,
+        )
 
         self._handle_failure(retvalue)
 

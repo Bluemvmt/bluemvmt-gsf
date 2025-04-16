@@ -71,6 +71,18 @@ class Gsf:
         self._libgsf.gsfNextJsonRecord.argtypes = [c_int, c_int]
         self._libgsf.gsfNextJsonRecord.restype = c_gsfNextJsonRecord
 
+    def gsfOpenForJson(
+        self,
+        filename: bytes,
+        mode: int,
+        p_handle,
+        bufsize: int,
+        include_denormalized_fields: int,
+    ) -> int:
+        return self._libgsf.gsfOpenForJson(
+            filename, mode, p_handle, bufsize, include_denormalized_fields
+        )
+
     def gsfOpen(self, filename: bytes, mode: int, p_handle) -> int:
         """
         :param filename: bytestring e.g. b'path/to/file.gsf'
