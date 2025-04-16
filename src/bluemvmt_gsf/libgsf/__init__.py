@@ -2,7 +2,7 @@ from ctypes import byref, c_int
 from enum import IntEnum
 from os import fsencode
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
 from ..models import RecordType
 from .bindings import Gsf, GsfVersion
@@ -25,7 +25,7 @@ class GsfFile:
         mode: int = FileMode.GSF_READONLY_INDEX,
         desired_record: c_int = RecordType.GSF_NEXT_RECORD,
         gsf_version: GsfVersion = GsfVersion._3_10,
-        buffer_size: Optional[int] = None,
+        buffer_size: int = 0,
     ):
         self.gsf = Gsf(gsf_version=gsf_version)
         self.desired_record = desired_record
@@ -39,12 +39,13 @@ class GsfFile:
             self.path = path
 
         self.handle = c_int(0)
-        if buffer_size is None:
-            retvalue: int = self.gsf.gsfOpen(fsencode(self.path), mode, byref(self.handle))
-        else:
-            retvalue: int = self.gsf.gsfOpenBuffered(
-                self.path.encode(), mode, byref(self.handle), buffer_size
-            )
+        retvalue: int = self.gsf.gsfOpenForJson(
+            fsencode(self.path),
+            mode,
+            byref(self.handle),
+            0,
+            self.include_denormalized_fields,
+        )
 
         self._handle_failure(retvalue)
 
@@ -62,10 +63,10 @@ class GsfFile:
         self._handle_failure(self.gsf.gsfClose(self.handle))
 
     def next_json_record(self, desired_record: int = 0):
-        next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record, self.include_denormalized_fields )
+        next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record)
         while next_record.last_return_value > 0:
             yield next_record.json_record
-            next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record, self.include_denormalized_fields)
+            next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record)
 
     def get_number_records(self, desired_record: RecordType) -> int:
         """

@@ -71,6 +71,18 @@ class Gsf:
         self._libgsf.gsfNextJsonRecord.argtypes = [c_int, c_int]
         self._libgsf.gsfNextJsonRecord.restype = c_gsfNextJsonRecord
 
+    def gsfOpenForJson(
+        self,
+        filename: bytes,
+        mode: int,
+        p_handle,
+        bufsize: int,
+        include_denormalized_fields: int,
+    ) -> int:
+        return self._libgsf.gsfOpenForJson(
+            filename, mode, p_handle, bufsize, include_denormalized_fields
+        )
+
     def gsfOpen(self, filename: bytes, mode: int, p_handle) -> int:
         """
         :param filename: bytestring e.g. b'path/to/file.gsf'
@@ -91,9 +103,9 @@ class Gsf:
         return self._libgsf.gsfOpenBuffered(filename, mode, p_handle, buf_size)
 
     def gsfNextJsonRecord(
-        self, handle: c_int, desired_record: c_int, include_denormalized_fields: c_int
+        self, handle: c_int, desired_record: c_int
     ) -> c_gsfNextJsonRecord:
-        return self._libgsf.gsfNextJsonRecord(handle, desired_record, include_denormalized_fields)
+        return self._libgsf.gsfNextJsonRecord(handle, desired_record)
 
     def gsfClose(self, handle: c_int) -> int:
         """
