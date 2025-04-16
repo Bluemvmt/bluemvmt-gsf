@@ -7,7 +7,6 @@ from kafka import KafkaProducer
 from bluemvmt_gsf.libgsf import GsfFile
 from bluemvmt_gsf.models import (  # , GsfSwathBathyPing, RecordType
     GsfRecord,
-    RecordType,
     deserialize_record,
 )
 
@@ -63,13 +62,13 @@ if __name__ == "__main__":
     else:
         num_records: int = sys.maxsize
 
-    records_read: int = 0;
+    records_read: int = 0
     with GsfFile(args.gsf_file, include_denormalized_fields=True) as gf:
         record: GsfRecord
         for record in gf.next_json_record(desired_record=args.desired_record):
             if records_read > num_records:
                 break
-            
+
             if record is not None:
                 pyrec = deserialize_record(record)
                 print(pyrec)
