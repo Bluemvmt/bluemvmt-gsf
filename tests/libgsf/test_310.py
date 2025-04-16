@@ -18,6 +18,38 @@ def test_to_json(gsf_test_file_path):
         gsf_file.close()
 
 
+def test_to_json_with_druid_fields_pydantic(gsf_test_file_path):
+    print(f"gsf_test_file_path = {gsf_test_file_path}")
+    gsf_file: GsfFile = GsfFile(
+        path=gsf_test_file_path, include_denormalized_fields=True
+    )
+    try:
+        count: int = 0
+        for raw in gsf_file.next_json_record():
+            if raw is not None:
+                record = deserialize_record(raw)
+                print(f"record = {record}")
+            count += 1
+        assert count == 5
+    finally:
+        gsf_file.close()
+
+
+def test_to_json_with_denormalized_fields(gsf_test_file_path):
+    gsf_file: GsfFile = GsfFile(
+        path=gsf_test_file_path, include_denormalized_fields=True
+    )
+    try:
+        count: int = 0
+        for record in gsf_file.next_json_record():
+            if record is not None:
+                print(f"rec = {record.decode()}")
+            count += 1
+        assert count == 5
+    finally:
+        gsf_file.close()
+
+
 def test_to_pydantic(gsf_test_file_path):
     gsf_file: GsfFile = GsfFile(path=gsf_test_file_path)
     try:
