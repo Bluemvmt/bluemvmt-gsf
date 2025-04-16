@@ -40,7 +40,7 @@ bluemvmt-gsf
 
 
 The gsfpy Python package is a simple ctype wrapper for the native C
-libgsf library and is awkward to use.  The bluemvmt-gsf package adds 
+libgsf library and is awkward to use.  The bluemvmt-gsf package adds
 a layer to output pure Python Pydantic objects and pure Python types
 that are much easier to use from your python code.
 
