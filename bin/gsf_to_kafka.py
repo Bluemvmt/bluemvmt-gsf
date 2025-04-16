@@ -8,7 +8,7 @@ from bluemvmt_gsf.libgsf import GsfFile
 from bluemvmt_gsf.models import (  # , GsfSwathBathyPing, RecordType
     GsfRecord,
     RecordType,
-    deserialize_record
+    deserialize_record,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         dest="desired_record",
         type=int,
         default=0,
-        help="The desired GSF record type."
+        help="The desired GSF record type.",
     )
     args = parser.parse_args()
 
@@ -63,12 +63,15 @@ if __name__ == "__main__":
     else:
         num_records: int = sys.maxsize
 
+    records_read: int = 0;
     with GsfFile(args.gsf_file, include_denormalized_fields=True) as gf:
         record: GsfRecord
         for record in gf.next_json_record(desired_record=args.desired_record):
+            if records_read > num_records:
+                break
+            
             if record is not None:
                 pyrec = deserialize_record(record)
                 print(pyrec)
-                if pyrec.record_type is RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING:
-                    pass
-                    #kafka_producer.send(args.kafka_topic, record)
+                kafka_producer.send(args.kafka_topic, record)
+                records_read += 1
