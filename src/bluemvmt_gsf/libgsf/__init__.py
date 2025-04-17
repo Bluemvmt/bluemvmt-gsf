@@ -22,6 +22,7 @@ class GsfFile:
         self,
         path: Union[str, Path],
         include_denormalized_fields: bool = False,
+        flatten: bool = False,
         mode: int = FileMode.GSF_READONLY_INDEX,
         desired_record: c_int = RecordType.GSF_NEXT_RECORD,
         gsf_version: GsfVersion = GsfVersion._3_10,
@@ -33,6 +34,9 @@ class GsfFile:
         if include_denormalized_fields is True:
             self.include_denormalized_fields = 1
 
+        self.flatten: int = 0
+        if flatten:
+            self.flatten = 1
         if isinstance(path, Path):
             self.path = str(path)
         else:
@@ -45,6 +49,7 @@ class GsfFile:
             byref(self.handle),
             0,
             self.include_denormalized_fields,
+            self.flatten,
         )
 
         self._handle_failure(retvalue)
