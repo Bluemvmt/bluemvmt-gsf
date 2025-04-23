@@ -133,9 +133,71 @@ class GsfRecord(BaseModel):
     ) = None
 
 
-class GsfAllRecords(BaseModel):
-    records: list[GsfRecord] = []
+class GsfFlattenedRecord(BaseModel):
+    record_type: RecordType
+    file_name: str | None = None
+    gsf_version: str | None = None
+    timestamp: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+
+    # GsfSwathBathyPing
+    mb_height: float | None = None
+    mb_number_beams: int | None = None
+    mb_center_beam: int | None = None
+    mb_tide_corrector: float | None = None
+    mb_gps_tide_corrector: float | None = None
+    mb_depth_corrector: float | None = None
+    mb_heading: float | None = None
+    mb_pitch: float | None = None
+    mb_roll: float | None = None
+    mb_heave: float | None = None
+    mb_course: float | None = None
+    mb_speed: float | None = None
+    mb_depth: list[float] | None = None
+    mb_nominal_depth: list[float] | None = None
+    mb_across_track: list[float] | None = None
+    mb_along_track: list[float] | None = None
+    mb_travel_time: list[float] | None = None
+    mb_beam_angle: list[float] | None = None
+    mb_mc_amplitude: list[float] | None = None
+    mb_mr_amplitude: list[float] | None = None
+    mb_echo_width: list[float] | None = None
+    mb_quality_factor: list[float] | None = None
+    mb_receive_heave: list[float] | None = None
+    mb_depth_error: list[float] | None = None
+    mb_across_track_error: list[float] | None = None
+    mb_along_track_error: list[float] | None = None
+    mb_beam_flags: list[int] | None = None
+    mb_signal_to_noise: float | None = None
+    mb_beam_angle_forward: list[float] | None = None
+    mb_vertical_error: list[float] | None = None
+    mb_horizontal_error: list[float] | None = None
+    mb_sector_number: list[int] | None = None
+    mb_detection_info: list[int] | None = None
+    mb_incident_beam_adj: list[float] | None = None
+    mb_system_cleaning: list[int] | None = None
+    mb_doppler_corr: list[float] | None = None
+    mb_sonar_vert_uncert: list[float] | None = None
+    mb_sonar_horiz_uncert: list[float] | None = None
+    mb_detection_window: list[float] | None = None
+    mb_mean_abs_coeff: list[float] | None = None
+    sensor_id: int | None = None
+    sensor_name: str | None = None
+
+    # Comment
+    comment: str | None = None
+
+    # History
+    history_comment: str | None = None
+    history_hostname: str | None = None
+    history_operator_name: str | None = None
+    history_command_line: str | None = None
 
 
 def deserialize_record(json_src: str) -> GsfRecord:
     return GsfRecord.model_validate(from_json(json_src))
+
+
+def deserialize_flattened_record(json_src: str) -> GsfFlattenedRecord:
+    return GsfFlattenedRecord.model_validate(from_json(json_src))
