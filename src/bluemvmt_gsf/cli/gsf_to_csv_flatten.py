@@ -77,9 +77,7 @@ def output_json(cli_args: argparse.Namespace) -> None:
                     print(f"all_headers = {all_headers}")
                     writer = csv.DictWriter(csvfile, fieldnames=all_headers)
                     writer.writeheader()
-                    writer = csv.DictWriter(
-                        flattened_csvfile, fieldnames=all_headers
-                    )
+                    writer = csv.DictWriter(flattened_csvfile, fieldnames=all_headers)
                     writer.writeheader()
 
                 sensor_id = body.sensor_id
