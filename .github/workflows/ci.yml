@@ -1,21 +1,13 @@
-# GitHub Actions configuration **EXAMPLE**,
-# MODIFY IT ACCORDING TO YOUR NEEDS!
-# Reference: https://docs.github.com/en/actions
-
 name: tests
 
 on:
   push:
-    # Avoid using all the resources/limits available by checking only
-    # relevant branches and tags. Other branches can be checked via PRs.
     branches: [main]
-    tags: ['v[0-9]*', '[0-9]+.[0-9]+*']  # Match tags that resemble a version
-  pull_request:  # Run in every PR
-  workflow_dispatch:  # Allow manually triggering the workflow
+    tags: ["v[0-9]*", "[0-9]+.[0-9]+*"]
+  pull_request:
+  workflow_dispatch:
   schedule:
-    # Run roughly every 15 days at 00:00 UTC
-    # (useful to check if updates on dependencies break the package)
-    - cron: '0 0 1,16 * *'
+    - cron: "0 0 1,16 * *"
 
 permissions:
   contents: read
@@ -33,22 +25,26 @@ jobs:
       wheel-distribution: ${{ steps.wheel-distribution.outputs.path }}
     steps:
       - uses: actions/checkout@v4
-        with: {fetch-depth: 0}  # deep clone for setuptools-scm
       - uses: actions/setup-python@v5
         id: setup-python
-        with: {python-version: "3.12"}
+        with: { python-version: "3.12" }
+      - name: Install Poetry
+        run: pipx install poetry
       - name: Run static analysis and format checkers
         run: pipx run pre-commit run --all-files --show-diff-on-failure
       - name: Build package distribution files
-        run: >-
-          pipx run --python '${{ steps.setup-python.outputs.python-path }}'
-          tox -e clean,build
+        run: poetry build
+      - name: Verify bundled native libraries
+        run: |
+          set -euo pipefail
+          unzip -l dist/*.whl | grep 'libgsf-x86_64-03.11.so'
+          unzip -l dist/*.whl | grep 'libgsf-aarch64-03.11.so'
+          tar -tzf dist/*.tar.gz | grep 'libgsf-x86_64-03.11.so'
+          tar -tzf dist/*.tar.gz | grep 'libgsf-aarch64-03.11.so'
       - name: Record the path of wheel distribution
         id: wheel-distribution
-        run: echo "path=$(ls dist/*.whl)" >> $GITHUB_OUTPUT
+        run: echo "path=$(ls dist/*.whl)" >> "$GITHUB_OUTPUT"
       - name: Store the distribution files for use in other stages
-        # `tests` and `publish` will use the same pre-built distributions,
-        # so we make sure to release the exact same package that was tested
         uses: actions/upload-artifact@v4
         with:
           name: python-distribution-files
@@ -60,9 +56,9 @@ jobs:
     strategy:
       matrix:
         python:
-        - "3.12"  # newest Python that is stable
+          - "3.12"
         platform:
-        - ubuntu-latest
+          - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
@@ -70,16 +66,20 @@ jobs:
         id: setup-python
         with:
           python-version: ${{ matrix.python }}
+      - name: Install Poetry
+        run: pipx install poetry
       - name: Retrieve pre-built distribution files
         uses: actions/download-artifact@v4
-        with: {name: python-distribution-files, path: dist/}
+        with: { name: python-distribution-files, path: dist/ }
+      - name: Install package and test dependencies
+        run: |
+          poetry install --with dev --no-root
+          poetry run pip install dist/*.whl
       - name: Run tests
         run: >-
-          pipx run --python '${{ steps.setup-python.outputs.python-path }}'
-          tox --installpkg '${{ needs.prepare.outputs.wheel-distribution }}'
-          -- -rFEx --durations 10 --color yes  # pytest args
+          poetry run pytest -rFEx --durations 10 --color yes
       - name: Generate coverage report
-        run: pipx run coverage lcov -o coverage.lcov
+        run: poetry run coverage lcov -o coverage.lcov
       - name: Upload partial coverage report
         uses: coverallsapp/github-action@master
         with:
@@ -99,9 +99,9 @@ jobs:
           parallel-finished: true
 
   publish-to-pypi:
-    name: Publish Python 🐍 distribution 📦 to PyPI
+    name: Publish Python distribution to PyPI
     needs:
-    - finalize
+      - finalize
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && ! endsWith(github.ref, '.dev') }}
     runs-on: ubuntu-latest
 
@@ -110,24 +110,22 @@ jobs:
       url: https://pypi.org/p/bluemvmt-gsf
 
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write
 
     steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-distribution-files
-        path: dist/
-    - name: Publish distribution 📦 to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://upload.pypi.org/legacy/
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-distribution-files
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
 
   publish-to-testpypi:
-    name: Publish Python 🐍 distribution 📦 to TestPyPI
+    name: Publish Python distribution to TestPyPI
     needs:
-    - finalize
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '.dev')}}
+      - finalize
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '.dev') }}
     runs-on: ubuntu-latest
 
     environment:
@@ -135,15 +133,15 @@ jobs:
       url: https://test.pypi.org/p/bluemvmt-gsf
 
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write
 
     steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-distribution-files
-        path: dist/
-    - name: Publish distribution 📦 to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-distribution-files
+          path: dist/
+      - name: Publish distribution to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/

@@ -39,10 +39,4 @@ if __name__ == "__main__":
                     pyrec: GsfRecord = deserialize_record(record)
                     print(f"{pyrec.record_type},{len(record)},{pc() - start}")
                 except ValidationError:
-                    print(f"Pydantic doesn't validate: {record.decode("utf-8")}")
-
-    # with open_gsf(args.gsf_file, mode=FileMode.GSF_READONLY_INDEX) as gf:
-    #     with open(f"{args.gsf_file}.json", "w") as f:
-    #         record: GsfRecord
-    #         for record in gsf_read(gf, args.gsf_file):
-    #             f.write(record.model_dump_json() + "\n")
+                    print(f"Pydantic doesn't validate: {record.decode('utf-8')}")

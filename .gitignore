@@ -3,12 +3,14 @@
 
 # Test files and results
 test_files/*
+*.nsf
 # Temporary and binary files
 *~
 *.py[cod]
 *.cfg
 !.isort.cfg
-!setup.cfg
+!.flake8
+!.coveragerc
 *.orig
 *.log
 *.pot

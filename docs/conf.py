@@ -24,9 +24,8 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # This hack is necessary since RTD does not issue `sphinx-apidoc` before running
 # `sphinx-build -b html . _build/html`. See Issue:
 # https://github.com/readthedocs/readthedocs.org/issues/1139
-# DON'T FORGET: Check the box "Install your project inside a virtualenv using
-# setup.py install" in the RTD Advanced Settings.
-# Additionally it helps us to avoid running apidoc manually
+# Additionally it helps us to avoid running apidoc manually.
+# Read the Docs installs the project via pip using .readthedocs.yml.
 
 try:  # for Sphinx >= 1.7
     from sphinx.ext import apidoc
@@ -43,7 +42,12 @@ except FileNotFoundError:
 try:
     import sphinx
 
-    cmd_line = f"sphinx-apidoc --implicit-namespaces -f -o {output_dir} {module_dir}"
+    # Exclude bundled native libraries from API docs.
+    exclude_lib = os.path.join(module_dir, "libgsf", "lib")
+    cmd_line = (
+        f"sphinx-apidoc --implicit-namespaces -f -o {output_dir} "
+        f"{module_dir} {exclude_lib}"
+    )
 
     args = cmd_line.split(" ")
     if tuple(sphinx.__version__.split(".")) >= ("1", "7"):
@@ -146,7 +150,7 @@ pygments_style = "sphinx"
 # keep_warnings = False
 
 # If this is True, todo emits a warning for each TODO entries. The default is False.
-todo_emit_warnings = True
+todo_emit_warnings = False
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -279,8 +283,7 @@ intersphinx_mapping = {
     "sklearn": ("https://scikit-learn.org/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
-    "setuptools": ("https://setuptools.pypa.io/en/stable/", None),
-    "pyscaffold": ("https://pyscaffold.org/en/stable", None),
+    "pydantic": ("https://docs.pydantic.dev/latest/", None),
 }
 
 print(f"loading configurations for {project} {version} ...", file=sys.stderr)

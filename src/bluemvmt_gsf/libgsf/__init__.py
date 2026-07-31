@@ -1,8 +1,9 @@
+import json
 from ctypes import byref, c_int
 from enum import IntEnum
 from os import fsencode
 from pathlib import Path
-from typing import Union
+from typing import Iterator, Union
 
 from ..models import RecordType
 from .bindings import Gsf, GsfVersion
@@ -15,7 +16,7 @@ class FileMode(IntEnum):
 
 class GsfFile:
     """
-    Represents an open connection to a GSF file
+    Represents an open connection to a GSF file.
     """
 
     def __init__(
@@ -24,30 +25,21 @@ class GsfFile:
         include_denormalized_fields: bool = False,
         flatten: bool = False,
         mode: int = FileMode.GSF_READONLY_INDEX,
-        desired_record: c_int = RecordType.GSF_NEXT_RECORD,
-        gsf_version: GsfVersion = GsfVersion._3_10,
+        gsf_version: GsfVersion = GsfVersion._3_11,
         buffer_size: int = 0,
     ):
         self.gsf = Gsf(gsf_version=gsf_version)
-        self.desired_record = desired_record
-        self.include_denormalized_fields: int = 0
-        if include_denormalized_fields is True:
-            self.include_denormalized_fields = 1
-
-        self.flatten: int = 0
-        if flatten:
-            self.flatten = 1
-        if isinstance(path, Path):
-            self.path = str(path)
-        else:
-            self.path = path
+        self.include_denormalized_fields: int = 1 if include_denormalized_fields else 0
+        self.flatten: int = 1 if flatten else 0
+        self.path = str(path)
+        self.buffer_size = buffer_size
 
         self.handle = c_int(0)
         retvalue: int = self.gsf.gsfOpenForJson(
             fsencode(self.path),
             mode,
             byref(self.handle),
-            0,
+            self.buffer_size,
             self.include_denormalized_fields,
             self.flatten,
         )
@@ -67,11 +59,35 @@ class GsfFile:
         """
         self._handle_failure(self.gsf.gsfClose(self.handle))
 
-    def next_json_record(self, desired_record: int = 0):
-        next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record)
+    def next_json_record(
+        self, desired_record: int = RecordType.GSF_NEXT_RECORD
+    ) -> Iterator[bytes]:
+        """
+        Yield JSON records from the open GSF file.
+
+        When ``desired_record`` is not ``GSF_NEXT_RECORD``, records are filtered
+        in Python after decoding. Native libgsf filtering is unreliable across
+        the bundled JSON helpers, so this wrapper guarantees the requested type.
+        """
+        next_record = self.gsf.gsfNextJsonRecord(
+            self.handle, RecordType.GSF_NEXT_RECORD
+        )
         while next_record.last_return_value > 0:
-            yield next_record.json_record
-            next_record = self.gsf.gsfNextJsonRecord(self.handle, desired_record)
+            payload = next_record.json_record
+            if payload is not None:
+                if (
+                    desired_record == RecordType.GSF_NEXT_RECORD
+                    or self._record_type(payload) == desired_record
+                ):
+                    yield payload
+            next_record = self.gsf.gsfNextJsonRecord(
+                self.handle, RecordType.GSF_NEXT_RECORD
+            )
+
+    @staticmethod
+    def _record_type(payload: bytes) -> int:
+        data = json.loads(payload)
+        return int(data["record_type"])
 
     def get_number_records(self, desired_record: RecordType) -> int:
         """

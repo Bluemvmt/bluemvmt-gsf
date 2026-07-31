@@ -1,23 +1,93 @@
-[tool.poetry]
+[project]
 name = "bluemvmt-gsf"
-version = "0.4.0"
-description = "A package for accessing GSF files in a pythonic manner."
-authors = []
-readme = "README.rst"
-packages = [
-    {include = "bluemvmt_gsf", from = "src"},
+version = "0.5.0"
+description = "Decode Generic Sensor Format (GSF) files into Pydantic models via bundled libgsf 3.11."
+authors = [
+    { name = "Vincent Sheffer", email = "vincent.sheffer@bluemvmt.com" },
 ]
-include = ["CHANGELOG.md"]
+license = "MIT"
+license-files = ["LICENSE.txt"]
+readme = "README.rst"
+requires-python = ">=3.11,<4"
+keywords = ["gsf", "libgsf", "bathymetry", "hydrography", "sonar"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "pydantic (>=2.0,<3)",
+]
+
+[project.optional-dependencies]
+docs = ["sphinx (>=7.0)"]
+
+[project.urls]
+Homepage = "https://github.com/vincebluemvmt/bluemvmt-gsf"
+Repository = "https://github.com/vincebluemvmt/bluemvmt-gsf"
+Documentation = "https://bluemvmt-gsf.readthedocs.io"
+
+[tool.poetry]
+packages = [
+    { include = "bluemvmt_gsf", from = "src" },
+]
+include = [
+    { path = "CHANGELOG.rst", format = ["sdist"] },
+    { path = "LICENSE.txt", format = ["sdist"] },
+    { path = "src/bluemvmt_gsf/libgsf/lib/libgsf-x86_64-03.11.so", format = ["sdist", "wheel"] },
+    { path = "src/bluemvmt_gsf/libgsf/lib/libgsf-aarch64-03.11.so", format = ["sdist", "wheel"] },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = ">=2.0,<3"
+sphinx = { version = ">=7.0", optional = true }
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+pytest-cov = ">=5.0"
+pre-commit = ">=3.0"
+coverage = ">=7.0"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = ">=7.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.9.0"]
 build-backend = "poetry.core.masonry.api"
 
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-#requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
-#build-backend = "setuptools.build_meta"
+[tool.pytest.ini_options]
+addopts = "--cov bluemvmt_gsf --cov-report term-missing --verbose"
+norecursedirs = ["dist", "build", ".tox"]
+testpaths = ["tests"]
 
-[tool.setuptools_scm]
-# For smarter version schemes and other configuration options,
-# check out https://github.com/pypa/setuptools_scm
-version_scheme = "no-guess-dev"
+[tool.coverage.run]
+branch = true
+source = ["bluemvmt_gsf"]
+
+[tool.coverage.paths]
+source = ["src/", "*/site-packages/"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self\\.debug",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.isort]
+profile = "black"
+known_first_party = ["bluemvmt_gsf"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]

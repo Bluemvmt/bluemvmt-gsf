@@ -1,50 +1,32 @@
-"""
-    Dummy contest.py for bluemvmt_gsf.
+"""Shared pytest fixtures for bluemvmt-gsf."""
 
-    If you don't know what this is for, just leave it empty.
-    Read more about conftest.py under:
-    - https://docs.pytest.org/en/stable/fixture.html
-    - https://docs.pytest.org/en/stable/writing_plugins.html
-"""
-
-import logging
-import os
+from pathlib import Path
 
 import pytest
 
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
+TEST_DIR = Path(__file__).resolve().parent
+DEFAULT_GSF_FILE = "GSF3_09_test_file.gsf"
 
 
 def pytest_addoption(parser):
-    parser.addoption("--save-json", action="store", default="false")
-    parser.addoption("--test-gsf-file", action="store", default="GSF3_09_test_file.gsf")
-    parser.addoption("--output-rec", action="store", default="false")
+    parser.addoption(
+        "--test-gsf-file",
+        action="store",
+        default=DEFAULT_GSF_FILE,
+        help="GSF fixture filename under tests/ (older formats remain readable).",
+    )
 
 
 @pytest.fixture(scope="session")
-def save_json(request) -> bool:
-    return request.config.getoption("--save-json").lower() == "true"
-
-
-@pytest.fixture(scope="session")
-def output_rec(request) -> bool:
-    return request.config.getoption("--output-rec").lower() == "true"
-
-
-@pytest.fixture(scope="session")
-def swath_bathymetric_ping_json():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(f"{dir_path}/swath_bathymetric_ping.json") as f:
-        yield f.read()
-
-
-@pytest.fixture(scope="session")
-def gsf_file_name(request):
+def gsf_file_name(request) -> str:
     return request.config.getoption("--test-gsf-file")
 
 
 @pytest.fixture(scope="session")
-def gsf_test_file_path(gsf_file_name):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    return f"{dir_path}/{gsf_file_name}"
+def gsf_test_file_path(gsf_file_name) -> Path:
+    return TEST_DIR / gsf_file_name
+
+
+@pytest.fixture(scope="session")
+def swath_bathymetric_ping_json() -> str:
+    return (TEST_DIR / "swath_bathymetric_ping.json").read_text(encoding="utf-8")

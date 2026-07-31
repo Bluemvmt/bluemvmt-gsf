@@ -1,73 +1,96 @@
-.. These are examples of badges you might want to add to your README:
-   please update the URLs accordingly
-
-    .. image:: https://readthedocs.org/projects/bluemvmt-gsf/badge/?version=latest
-        :alt: ReadTheDocs
-        :target: https://bluemvmt-gsf.readthedocs.io/en/stable/
-    .. image:: https://img.shields.io/coveralls/github/<USER>/bluemvmt-gsf/main.svg
-        :alt: Coveralls
-        :target: https://coveralls.io/r/<USER>/bluemvmt-gsf
-    .. image:: https://img.shields.io/pypi/v/bluemvmt-gsf.svg
-        :alt: PyPI-Server
-        :target: https://pypi.org/project/bluemvmt-gsf/
-    .. image:: https://img.shields.io/conda/vn/conda-forge/bluemvmt-gsf.svg
-        :alt: Conda-Forge
-        :target: https://anaconda.org/conda-forge/bluemvmt-gsf
-    .. image:: https://pepy.tech/badge/bluemvmt-gsf/month
-        :alt: Monthly Downloads
-        :target: https://pepy.tech/project/bluemvmt-gsf
-    .. image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Twitter
-        :alt: Twitter
-        :target: https://twitter.com/bluemvmt-gsf
-
-.. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
-    :alt: Project generated with PyScaffold
-    :target: https://pyscaffold.org/
-.. image:: https://coveralls.io/repos/github/vincebluemvmt/bluemvmt-gsf/badge.svg?branch=refs/tags/0.1.0
-    :target: https://coveralls.io/github/vincebluemvmt/bluemvmt-gsf?branch=refs/tags/0.1.0
 .. image:: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml/badge.svg
     :alt: Build Status
     :target: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml
-
-|
+.. image:: https://img.shields.io/pypi/v/bluemvmt-gsf.svg
+    :alt: PyPI
+    :target: https://pypi.org/project/bluemvmt-gsf/
 
 ============
 bluemvmt-gsf
 ============
 
+Decode Generic Sensor Format (GSF) files into Pydantic models.
 
-    Generic Sensor Format decoder to pure Python objects/types.
+``bluemvmt-gsf`` wraps a bundled, JSON-enabled ``libgsf`` **3.11** shared library
+with ``ctypes`` and exposes typed Python records that are easier to work with
+than a raw C binding.
 
+Platform support
+================
 
-The gsfpy Python package is a simple ctype wrapper for the native C
-libgsf library and is awkward to use.  The bluemvmt-gsf package adds
-a layer to output pure Python Pydantic objects and pure Python types
-that are much easier to use from your python code.
+- **OS:** Linux only
+- **Architectures:** ``x86_64`` and ``aarch64``
+- **Python:** 3.11+
+- **Native library:** GSF / libgsf **3.11** only
+- **glibc:** the bundled binaries require **glibc 2.33+** (for example Ubuntu 22.04+)
 
+Older on-disk GSF files remain readable through libgsf 3.11 compatibility paths.
+Windows and macOS native libraries are not provided.
 
+Installation
+============
 
-.. _pyscaffold-notes:
+From PyPI::
 
-Making Changes & Contributing
-=============================
+    pip install bluemvmt-gsf
 
-This project uses `pre-commit`_, please make sure to install it before making any
-changes::
+For local development with Poetry::
 
-    pip install pre-commit
-    cd bluemvmt-gsf
-    pre-commit install
+    poetry install --with dev,docs
 
-It is a good idea to update the hooks to the latest version::
+Usage
+=====
 
-    pre-commit autoupdate
+Decode records from a GSF file::
 
-Don't forget to tell your contributors to also install and use pre-commit.
+    from bluemvmt_gsf.libgsf import GsfFile
+    from bluemvmt_gsf.models import RecordType, deserialize_record
 
-.. _pre-commit: https://pre-commit.com/
+    with GsfFile("survey.gsf", include_denormalized_fields=True) as gsf:
+        for raw in gsf.next_json_record():
+            record = deserialize_record(raw)
+            print(record.record_type, record.timestamp)
 
-Note
-====
+Filter to swath bathymetry pings::
 
-This project has been set up using PyScaffold 4.6. For details and usage
-information on PyScaffold see https://pyscaffold.org/.
+    with GsfFile("survey.gsf") as gsf:
+        for raw in gsf.next_json_record(
+            desired_record=RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING
+        ):
+            ping = deserialize_record(raw).json_record
+            print(ping.number_beams, ping.sensor_name)
+
+Flattened JSON is also supported::
+
+    from bluemvmt_gsf.models import deserialize_flattened_record
+
+    with GsfFile("survey.gsf", flatten=True) as gsf:
+        for raw in gsf.next_json_record():
+            print(deserialize_flattened_record(raw))
+
+Development
+===========
+
+Install pre-commit hooks once::
+
+    poetry run pre-commit install
+
+Run the test suite::
+
+    poetry run pytest
+
+Build documentation::
+
+    poetry run sphinx-build -b html docs docs/_build/html
+
+Build distribution artifacts::
+
+    poetry build
+
+The resulting wheel and sdist include both
+``libgsf-x86_64-03.11.so`` and ``libgsf-aarch64-03.11.so``.
+
+License
+=======
+
+MIT. See ``LICENSE.txt``.
