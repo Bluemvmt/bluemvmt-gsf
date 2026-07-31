@@ -1,15 +1,19 @@
+import sys
 from ctypes import CDLL, POINTER, Structure, c_char_p, c_int, c_ubyte, c_uint32
 from enum import StrEnum
 from pathlib import Path
-from platform import machine
+from platform import machine, system
 
 from ..models import RecordType
 
+SUPPORTED_ARCHITECTURES = ("x86_64", "aarch64")
+GSF_LIBRARY_VERSION = "03.11"
+
 
 class GsfVersion(StrEnum):
-    _3_08 = "03.08"
-    _3_09 = "03.09"
-    _3_10 = "03.10"
+    """Bundled libgsf versions. Only GSF 3.11 is supported."""
+
+    _3_11 = GSF_LIBRARY_VERSION
 
 
 class c_gsfNextJsonRecord(Structure):
@@ -17,34 +21,57 @@ class c_gsfNextJsonRecord(Structure):
 
 
 class Gsf:
-    def __init__(self, gsf_version: GsfVersion = GsfVersion._3_10):
-        try:
-            self._libgsf_abs_path = str(
-                Path(__file__).parent
-                / "lib"
-                / f"libgsf-{machine()}-{gsf_version.value}.so"
+    def __init__(self, gsf_version: GsfVersion = GsfVersion._3_11):
+        host_system = system()
+        host_arch = machine()
+        if host_system != "Linux":
+            raise OSError(
+                f"bluemvmt-gsf supports Linux only; current platform is {host_system}."
             )
+        if host_arch not in SUPPORTED_ARCHITECTURES:
+            raise OSError(
+                "bluemvmt-gsf supports Linux architectures "
+                f"{', '.join(SUPPORTED_ARCHITECTURES)}; current architecture is "
+                f"{host_arch}."
+            )
+
+        self._libgsf_abs_path = str(
+            Path(__file__).parent / "lib" / f"libgsf-{host_arch}-{gsf_version.value}.so"
+        )
+        try:
             self._libgsf = CDLL(self._libgsf_abs_path)
         except OSError as osex:
-            raise Exception(
-                f"Cannot load shared library from {self._libgsf_abs_path}. Set the "
-                f"$GSFPY3_08_LIBGSF_PATH environment variable to the correct path, "
-                f"or remove it from the environment to use the default version."
+            raise OSError(
+                f"Cannot load bundled libgsf from {self._libgsf_abs_path}. "
+                f"Expected GSF {gsf_version.value} for Linux {host_arch} "
+                f"(Python {sys.version_info.major}.{sys.version_info.minor}). "
+                "Ensure the package was installed with its native library files "
+                "and that the host glibc is new enough for the bundled binary."
             ) from osex
 
         self._libgsf.gsfClose.argtypes = [c_int]
         self._libgsf.gsfClose.restype = c_int
 
-        self._libgsf.gsfOpen.argtypes = [c_char_p, c_int, (POINTER(c_int))]
+        self._libgsf.gsfOpen.argtypes = [c_char_p, c_int, POINTER(c_int)]
         self._libgsf.gsfOpen.restype = c_int
 
         self._libgsf.gsfOpenBuffered.argtypes = [
             c_char_p,
             c_int,
-            (POINTER(c_int)),
+            POINTER(c_int),
             c_int,
         ]
         self._libgsf.gsfOpenBuffered.restype = c_int
+
+        self._libgsf.gsfOpenForJson.argtypes = [
+            c_char_p,
+            c_int,
+            POINTER(c_int),
+            c_int,
+            c_int,
+            c_int,
+        ]
+        self._libgsf.gsfOpenForJson.restype = c_int
 
         self._libgsf.gsfIntError.argtypes = []
         self._libgsf.gsfIntError.restype = c_int
@@ -119,7 +146,7 @@ class Gsf:
         """
         File must be open for direct access (GSF_READONLY_INDEX or GSF_UPDATE_INDEX)
         :param handle: c_int
-        :param desired_record: gsfpy3_08.enums.RecordType
+        :param desired_record: bluemvmt_gsf.models.RecordType
         :return: number of records of type desired_record, otherwise -1
         """
         return self._libgsf.gsfGetNumberRecords(handle, desired_record)
