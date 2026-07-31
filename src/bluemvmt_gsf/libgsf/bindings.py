@@ -78,9 +78,10 @@ class Gsf:
         p_handle,
         bufsize: int,
         include_denormalized_fields: int,
+        flatten: int,
     ) -> int:
         return self._libgsf.gsfOpenForJson(
-            filename, mode, p_handle, bufsize, include_denormalized_fields
+            filename, mode, p_handle, bufsize, include_denormalized_fields, flatten
         )
 
     def gsfOpen(self, filename: bytes, mode: int, p_handle) -> int:
