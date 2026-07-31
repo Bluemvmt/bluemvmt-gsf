@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Unreleased
+0.5.0
 ==========
 
 - Ship ``bin/`` tools as installable console scripts (``gsf-to-json``,
