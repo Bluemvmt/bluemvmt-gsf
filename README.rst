@@ -1,6 +1,6 @@
-.. image:: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml/badge.svg
+.. image:: https://github.com/Bluemvmt/bluemvmt-gsf/actions/workflows/ci.yml/badge.svg
     :alt: Build Status
-    :target: https://github.com/vincebluemvmt/bluemvmt-gsf/actions/workflows/ci.yml
+    :target: https://github.com/Bluemvmt/bluemvmt-gsf/actions/workflows/ci.yml
 .. image:: https://img.shields.io/pypi/v/bluemvmt-gsf.svg
     :alt: PyPI
     :target: https://pypi.org/project/bluemvmt-gsf/
