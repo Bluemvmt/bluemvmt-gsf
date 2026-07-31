@@ -4,7 +4,7 @@ from platform import machine
 import pytest
 
 from bluemvmt_gsf.libgsf import GsfException, GsfFile
-from bluemvmt_gsf.libgsf.bindings import Gsf, GsfVersion, SUPPORTED_ARCHITECTURES
+from bluemvmt_gsf.libgsf.bindings import SUPPORTED_ARCHITECTURES, Gsf, GsfVersion
 from bluemvmt_gsf.models import (
     GsfComment,
     GsfSwathBathyPing,
@@ -26,9 +26,7 @@ def test_to_json(gsf_test_file_path):
 
 
 def test_to_json_with_denormalized_fields(gsf_test_file_path):
-    with GsfFile(
-        path=gsf_test_file_path, include_denormalized_fields=True
-    ) as gsf_file:
+    with GsfFile(path=gsf_test_file_path, include_denormalized_fields=True) as gsf_file:
         records = [deserialize_record(raw) for raw in gsf_file.next_json_record()]
 
     assert len(records) == 5
