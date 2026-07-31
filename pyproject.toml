@@ -1,6 +1,6 @@
 [project]
 name = "bluemvmt-gsf"
-version = "0.5.0rc1"
+version = "0.5.0rc2"
 description = "Decode Generic Sensor Format (GSF) files into Pydantic models via bundled libgsf 3.11."
 authors = [
     { name = "Vincent Sheffer", email = "vincent.sheffer@bluemvmt.com" },
@@ -27,6 +27,11 @@ dependencies = [
 [project.optional-dependencies]
 docs = ["sphinx (>=7.0)"]
 
+[project.scripts]
+gsf-to-json = "bluemvmt_gsf.cli.gsf_to_json:main"
+gsf-to-csv = "bluemvmt_gsf.cli.gsf_to_csv:main"
+gsf-to-csv-flatten = "bluemvmt_gsf.cli.gsf_to_csv_flatten:main"
+
 [project.urls]
 Homepage = "https://github.com/vincebluemvmt/bluemvmt-gsf"
 Repository = "https://github.com/vincebluemvmt/bluemvmt-gsf"
@@ -47,6 +52,9 @@ include = [
 python = "^3.11"
 pydantic = ">=2.0,<3"
 sphinx = { version = ">=7.0", optional = true }
+
+[tool.poetry.extras]
+docs = ["sphinx"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"

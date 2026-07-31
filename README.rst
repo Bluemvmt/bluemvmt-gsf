@@ -38,6 +38,21 @@ For local development with Poetry::
 
     poetry install --with dev,docs
 
+Command-line tools
+==================
+
+After installation the following commands are available on ``PATH``:
+
+- ``gsf-to-json`` — time deserialize of records from a binary GSF file
+- ``gsf-to-csv`` / ``gsf-to-csv-flatten`` — convert NDJSON record streams to CSV
+
+Example::
+
+    gsf-to-json --gsf-file survey.gsf --num-records 10
+
+From a source checkout you can also run the thin wrappers under ``bin/``
+(with the package installed), or ``poetry run gsf-to-json ...``.
+
 Usage
 =====
 

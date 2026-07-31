@@ -5,6 +5,8 @@ Changelog
 Unreleased
 ==========
 
+- Ship ``bin/`` tools as installable console scripts (``gsf-to-json``,
+  ``gsf-to-csv``, ``gsf-to-csv-flatten``).
 - Use Poetry as the sole packaging and dependency workflow.
 - Support only Linux ``x86_64`` / ``aarch64`` with bundled libgsf **3.11**.
 - Remove libgsf 3.08 / 3.09 / 3.10 binaries and multi-version selection.
