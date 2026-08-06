@@ -1,6 +1,6 @@
 [project]
 name = "bluemvmt-gsf"
-version = "0.6.0"
+version = "0.6.1"
 description = "Decode Generic Sensor Format (GSF) files into Pydantic models via bundled libgsf 3.11."
 authors = [
     { name = "Vincent Sheffer", email = "vincent.sheffer@bluemvmt.com" },

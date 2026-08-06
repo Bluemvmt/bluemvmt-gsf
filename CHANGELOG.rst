@@ -2,6 +2,13 @@
 Changelog
 =========
 
+0.6.1
+==========
+
+- Rebuild bundled libgsf 3.11 with ``-std=gnu11`` so the shared objects no
+  longer require ``GLIBC_2.38`` (``__isoc23_*``). Restores load on Debian
+  bookworm / Ubuntu 22.04 hosts such as ``python:3.12-bookworm``.
+
 0.6.0
 ==========
 
