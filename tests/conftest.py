@@ -30,3 +30,15 @@ def gsf_test_file_path(gsf_file_name) -> Path:
 @pytest.fixture(scope="session")
 def swath_bathymetric_ping_json() -> str:
     return (TEST_DIR / "swath_bathymetric_ping.json").read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="session")
+def processing_parameters_json() -> str:
+    return (TEST_DIR / "processing_parameters.json").read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="session")
+def processing_parameters_flattened_json() -> str:
+    return (TEST_DIR / "processing_parameters_flattened.json").read_text(
+        encoding="utf-8"
+    )

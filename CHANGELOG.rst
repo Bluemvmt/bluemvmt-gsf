@@ -2,6 +2,13 @@
 Changelog
 =========
 
+0.6.0
+==========
+
+- Add Pydantic support for GSF Processing Parameters records (type 4).
+- Rebuild bundled libgsf 3.11 (``x86_64`` / ``aarch64``) with Processing
+  Parameters JSON and flatten helpers.
+
 0.5.0
 ==========
 
