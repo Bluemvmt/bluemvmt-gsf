@@ -47,6 +47,12 @@ class GsfComment(BaseModel):
     comment: str
 
 
+class GsfProcessingParameters(BaseModel):
+    param_time: datetime
+    number_parameters: int
+    parameters: list[str]
+
+
 class GsfSwathBathySummary(BaseModel):
     start_time: datetime
     end_time: datetime
@@ -129,6 +135,7 @@ class GsfRecord(BaseModel):
         | GsfComment
         | GsfAttitude
         | GsfHistory
+        | GsfProcessingParameters
         | None
     ) = None
 
@@ -193,6 +200,10 @@ class GsfFlattenedRecord(BaseModel):
     history_hostname: str | None = None
     history_operator_name: str | None = None
     history_command_line: str | None = None
+
+    # Processing parameters
+    number_parameters: int | None = None
+    parameters: list[str] | None = None
 
 
 def deserialize_record(json_src: str) -> GsfRecord:
