@@ -1,5 +1,14 @@
 import sys
-from ctypes import CDLL, POINTER, Structure, c_char_p, c_int, c_ubyte, c_uint32
+from ctypes import (
+    CDLL,
+    POINTER,
+    Structure,
+    c_char_p,
+    c_int,
+    c_ubyte,
+    c_uint32,
+    c_void_p,
+)
 from enum import StrEnum
 from pathlib import Path
 from platform import machine, system
@@ -17,7 +26,7 @@ class GsfVersion(StrEnum):
 
 
 class c_gsfNextJsonRecord(Structure):
-    _fields_ = [("last_return_value", c_int), ("json_record", c_char_p)]
+    _fields_ = [("last_return_value", c_int), ("json_record", c_void_p)]
 
 
 class Gsf:
@@ -51,6 +60,12 @@ class Gsf:
 
         self._libgsf.gsfClose.argtypes = [c_int]
         self._libgsf.gsfClose.restype = c_int
+
+        self._libgsf.gsfCloseForJson.argtypes = [c_int]
+        self._libgsf.gsfCloseForJson.restype = c_int
+
+        self._libgsf.cJSON_free.argtypes = [c_void_p]
+        self._libgsf.cJSON_free.restype = None
 
         self._libgsf.gsfOpen.argtypes = [c_char_p, c_int, POINTER(c_int)]
         self._libgsf.gsfOpen.restype = c_int
@@ -141,6 +156,12 @@ class Gsf:
         :return: 0 if successful, otherwise -1
         """
         return self._libgsf.gsfClose(handle)
+
+    def gsfCloseForJson(self, handle: c_int) -> int:
+        return self._libgsf.gsfCloseForJson(handle)
+
+    def cJSON_free(self, pointer: c_void_p) -> None:
+        self._libgsf.cJSON_free(pointer)
 
     def gsfGetNumberRecords(self, handle: c_int, desired_record: RecordType) -> int:
         """

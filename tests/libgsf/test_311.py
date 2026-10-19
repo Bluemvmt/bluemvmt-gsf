@@ -1,9 +1,10 @@
 from pathlib import Path
 from platform import machine
+from shutil import copy2
 
 import pytest
 
-from bluemvmt_gsf.libgsf import GsfException, GsfFile
+from bluemvmt_gsf.libgsf import FileMode, GsfException, GsfFile
 from bluemvmt_gsf.libgsf.bindings import SUPPORTED_ARCHITECTURES, Gsf, GsfVersion
 from bluemvmt_gsf.models import (
     GsfComment,
@@ -75,24 +76,57 @@ def test_to_pydantic_record_types(gsf_test_file_path):
             assert isinstance(record.json_record, GsfComment)
 
 
-def test_get_num_records_swath_bathy_ping(gsf_test_file_path):
+def test_default_mode_does_not_create_index_file(gsf_test_file_path, tmp_path):
+    gsf_path = tmp_path / gsf_test_file_path.name
+    index_path = gsf_path.with_suffix(".nsf")
+    copy2(gsf_test_file_path, gsf_path)
+
+    with GsfFile(path=gsf_path) as gsf_file:
+        assert len(list(gsf_file.next_json_record())) == 5
+
+    assert not index_path.exists()
+
+
+def test_get_num_records_swath_bathy_ping(gsf_test_file_path, tmp_path):
+    gsf_path = tmp_path / gsf_test_file_path.name
+    index_path = gsf_path.with_suffix(".nsf")
+    copy2(gsf_test_file_path, gsf_path)
+
+    try:
+        with GsfFile(path=gsf_path, mode=FileMode.GSF_READONLY_INDEX) as gsf_file:
+            assert (
+                gsf_file.get_number_records(
+                    desired_record=RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING
+                )
+                == 3
+            )
+    finally:
+        index_path.unlink(missing_ok=True)
+
+
+def test_get_num_records_summary(gsf_test_file_path, tmp_path):
+    gsf_path = tmp_path / gsf_test_file_path.name
+    index_path = gsf_path.with_suffix(".nsf")
+    copy2(gsf_test_file_path, gsf_path)
+
+    try:
+        with GsfFile(path=gsf_path, mode=FileMode.GSF_READONLY_INDEX) as gsf_file:
+            assert (
+                gsf_file.get_number_records(
+                    desired_record=RecordType.GSF_RECORD_SWATH_BATHY_SUMMARY
+                )
+                == 1
+            )
+    finally:
+        index_path.unlink(missing_ok=True)
+
+
+def test_get_num_records_requires_indexed_mode(gsf_test_file_path):
     with GsfFile(path=gsf_test_file_path) as gsf_file:
-        assert (
+        with pytest.raises(GsfException):
             gsf_file.get_number_records(
                 desired_record=RecordType.GSF_RECORD_SWATH_BATHYMETRY_PING
             )
-            == 3
-        )
-
-
-def test_get_num_records_summary(gsf_test_file_path):
-    with GsfFile(path=gsf_test_file_path) as gsf_file:
-        assert (
-            gsf_file.get_number_records(
-                desired_record=RecordType.GSF_RECORD_SWATH_BATHY_SUMMARY
-            )
-            == 1
-        )
 
 
 def test_get_swath_bathy_ping(gsf_test_file_path):
