@@ -1,5 +1,5 @@
 import json
-from ctypes import byref, c_int
+from ctypes import byref, c_int, string_at
 from enum import IntEnum
 from os import fsencode
 from pathlib import Path
@@ -24,7 +24,7 @@ class GsfFile:
         path: Union[str, Path],
         include_denormalized_fields: bool = False,
         flatten: bool = False,
-        mode: int = FileMode.GSF_READONLY_INDEX,
+        mode: int = FileMode.GSF_READONLY,
         gsf_version: GsfVersion = GsfVersion._3_11,
         buffer_size: int = 0,
     ):
@@ -57,7 +57,7 @@ class GsfFile:
         Once this method has been called further operations will fail
         :raises GsfException: Raised if anything went wrong
         """
-        self._handle_failure(self.gsf.gsfClose(self.handle))
+        self._handle_failure(self.gsf.gsfCloseForJson(self.handle))
 
     def next_json_record(
         self, desired_record: int = RecordType.GSF_NEXT_RECORD
@@ -73,8 +73,12 @@ class GsfFile:
             self.handle, RecordType.GSF_NEXT_RECORD
         )
         while next_record.last_return_value > 0:
-            payload = next_record.json_record
-            if payload is not None:
+            pointer = next_record.json_record
+            if pointer is not None:
+                try:
+                    payload = string_at(pointer)
+                finally:
+                    self.gsf.cJSON_free(pointer)
                 if (
                     desired_record == RecordType.GSF_NEXT_RECORD
                     or self._record_type(payload) == desired_record
