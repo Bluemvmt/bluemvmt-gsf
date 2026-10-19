@@ -2,6 +2,17 @@
 Changelog
 =========
 
+0.7.0
+==========
+
+- Default ``GsfFile`` open mode to ``FileMode.GSF_READONLY`` so ``.nsf`` index
+  files are not created during normal sequential reads, while preserving
+  explicit ``FileMode.GSF_READONLY_INDEX`` support for ``get_number_records()``.
+- Rebuild bundled libgsf 3.11 (``x86_64`` / ``aarch64``) and update Python
+  ``ctypes`` bindings to free heap-allocated JSON strings via ``cJSON_free``
+  and close handles with ``gsfCloseForJson``.
+- Add ``Makefile`` with ``quality``, ``build``, and ``publish`` targets.
+
 0.6.1
 ==========
 
